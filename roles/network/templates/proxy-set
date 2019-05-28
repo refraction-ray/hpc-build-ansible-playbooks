@@ -1,0 +1,5 @@
+{% if set_proxy %}
+export http_proxy={{ env_vars['http_proxy'] }}
+export https_proxy={{ env_vars['https_proxy'] }}
+export ftp_proxy={{ env_vars['ftp_proxy'] }}
+{% endif %}

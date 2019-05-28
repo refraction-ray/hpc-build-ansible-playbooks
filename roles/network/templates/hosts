@@ -1,0 +1,20 @@
+127.0.0.1	localhost.localdomain	localhost
+::1		localhost6.localdomain6	localhost6
+
+# The following lines are desirable for IPv6 capable hosts
+::1     localhost ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ff02::3 ip6-allhosts
+
+# hostnames in the cluster
+
+{{ master_ip }}    {{ master_name }}
+
+{% for host in groups['cn']  %}
+{{ hostvars[host]['ip'] }}    {{ host }}
+{% endfor %}
+
+# other hostnames
+192.168.48.50  d1

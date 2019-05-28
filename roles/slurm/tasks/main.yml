@@ -1,0 +1,132 @@
+---
+# tasks file for slurm
+- name: apt install slurm
+  apt:
+    name: "{{ item }}"
+    state: present
+  become: yes
+  with_items:
+    - slurm-wlm
+    - libpam-slurm
+- name: copy munge key from ln nodes
+  copy:
+    backup: yes
+    src: /etc/munge/munge.key
+    dest: "{{role_path}}/files/munge.key"
+    remote_src: yes
+  become: yes
+  when: inventory_hostname in groups['ln']
+- name: copy munge key to cn nodes
+  copy:
+    backup: yes
+    src: munge.key
+    dest: /etc/munge/munge.key
+    owner: munge
+    group: munge
+    mode: "400"
+  become: yes
+  register: cnmungekey
+- name: restart munged
+  become: yes
+  service:
+    name: munge
+    state: restarted
+  when: cnmungekey.changed
+- name: config slurm
+  become: yes
+  template:
+    src: slurm.conf
+    dest: /etc/slurm-llnl/slurm.conf
+    backup: yes
+  register: lnslurm
+- name: config cgroup
+  become: yes
+  copy:
+    src: cgroup.conf
+    dest: /etc/slurm-llnl/cgroup.conf
+    backup: yes
+  register: lncgroup
+- name: add pam module in pamd/sshd
+  become: yes
+  copy:
+    src: pam-sshd
+    dest: /etc/pam.d/sshd
+  when: inventory_hostname in groups['cn']
+- name: comment pam_systemd
+  become: yes
+  copy:
+    src: pam-common-session
+    dest: /etc/pam.d/common-session
+  when: inventory_hostname in groups['cn']
+- name: add ssh permission to sudo group
+  become: yes
+  copy:
+    src: access.conf
+    dest: /etc/security/access.conf
+    backup: yes
+  when: inventory_hostname in groups['cn']
+- name: start slurmctld
+  become: yes
+  service:
+    name: slurmctld
+    state: restarted
+  when: inventory_hostname in groups['ln'] and (lnslurm.changed or lncgroup.changed)
+- name: start slurmd
+  become: yes
+  service:
+    name: slurmd
+    state: restarted
+  when: lnslurm.changed or lncgroup.changed
+- name: install slurmdbd on master
+  become: yes
+  when: inventory_hostname in groups['ln']
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - slurmdbd
+    - mysql-server
+    - python-mysqldb
+    - libmysqlclient-dev
+    - python3-mysqldb
+  register: lnslurmdbd
+- name: ensure mysql is running
+  become: yes
+  when: inventory_hostname in groups['ln'] and lnslurmdbd.changed
+  service:
+    name: mysql
+    state: started
+- name: create mysql user
+  become: yes
+  when: inventory_hostname in groups['ln']
+  mysql_user:
+    login_host: localhost
+    login_user: root
+    name: "{{ db_user }}"
+    password: "{{ db_pass }}"
+    priv: 'slurm_acct_db.*:ALL'
+    host: localhost
+    state: present
+    update_password: on_create
+  register: mysqluser
+- name: restart mysql
+  become: yes
+  when: inventory_hostname in groups['ln'] and mysqluser.changed
+  service:
+    name: mysql
+    state: restarted
+- name: config file for slurmdbd
+  become: yes
+  when: inventory_hostname in groups['ln']
+  template:
+    src: slurmdbd.conf
+    dest: /etc/slurm-llnl/slurmdbd.conf
+    backup: yes
+  register: slurmdbdconf
+- name: restart slurmdbd
+  become: yes
+  when: inventory_hostname in groups['ln'] and slurmdbdconf.changed
+  service:
+    name: slurmdbd
+    state: restarted

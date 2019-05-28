@@ -1,0 +1,2 @@
+source {{ spack_path }}/share/spack/setup-env.sh
+source $(spack location -i lmod)/lmod/lmod/init/bash  # load module

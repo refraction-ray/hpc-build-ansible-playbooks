@@ -1,0 +1,3 @@
+{% for h in groups['cn'] %}
+dhcp-host={{ hostvars[h]['mac'] }},{{ hostvars[h]['ip'] }},{{ h }},infinite
+{% endfor %}

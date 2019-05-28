@@ -1,0 +1,20 @@
+---
+# defaults file for basic
+nfs_dir:
+  - "/home"
+  - "/opt"
+  - "/DATA"
+aptpacks:
+  - tree
+  - nfs-common
+  - ntp
+  - make
+  - cmake
+  - python
+  - gfortran
+  - unzip
+  - openjdk-8-jdk
+  - pandoc
+extra_mounts:
+  - name: /SCRATCH
+    src: d1:/SCRATCH

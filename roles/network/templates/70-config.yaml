@@ -1,0 +1,7 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    {{ ansible_facts['default_ipv4']['interface'] }}:
+      dhcp4: yes
+      gateway4: {{ master_ip }}

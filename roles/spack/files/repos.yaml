@@ -1,0 +1,3 @@
+repos:
+  - $spack/var/spack/repos/override
+  - $spack/var/spack/repos/builtin

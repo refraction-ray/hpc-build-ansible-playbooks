@@ -1,0 +1,55 @@
+---
+# tasks file for spack
+- name: download spack
+  git:
+    repo: "https://github.com/spack/spack"
+    update: no
+    force: no
+    dest: "{{ spack_path }}"
+  when: inventory_hostname in groups['ln']
+- name: spack install lmod for module management
+  shell: "source {{spack_path}}/share/spack/setup-env.sh&&spack install lmod"
+  args: 
+    executable: /bin/bash
+  when: inventory_hostname in groups['ln']
+  changed_when: not lmodr.stdout.startswith("==> lmod is already installed")
+  register: lmodr
+- name: update etc profile to activate spack when start
+  become: yes
+  lineinfile:
+    path: /etc/profile
+    regexp: "/share/spack/setup-env.sh$"
+    line: "{{ 'source '+spack_path+'/share/spack/setup-env.sh' }}"
+- name: update etc profile to activate module system
+  become: yes
+  lineinfile:
+    path: /etc/profile
+    line: "source $(spack location -i lmod)/lmod/lmod/init/bash  # load module"
+    regexp: ".* # load module"
+- name: create override repo for spack
+  when: inventory_hostname in groups['ln']
+  file:
+    path: "{{ spack_path }}/var/spack/repos/override/packages"
+    state: directory
+- name: create the repo.yaml for the new repo
+  when: inventory_hostname in groups['ln']
+  copy:
+    src: repo.yaml
+    dest: "{{ spack_path }}/var/spack/repos/override/repo.yaml"
+- name: spack config file
+  when: inventory_hostname in groups['ln']
+  copy:
+    src: "{{ item }}"
+    dest: "{{ spack_path+'/etc/spack/'+item }}"
+    backup: yes
+  with_items:
+    - packages.yaml
+    - compilers.yaml
+    - modules.yaml
+    - repos.yaml
+- name: add shortcut for spack activation
+  become: yes
+  template:
+    src: spack-load
+    dest: /etc/spack-load
+    mode: 0755

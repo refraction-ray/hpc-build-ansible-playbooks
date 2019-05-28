@@ -1,0 +1,5 @@
+---
+# defaults file for slurm
+db_user: slurm
+slurm_user: slurm
+db_pass: 123456notgood

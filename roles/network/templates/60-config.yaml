@@ -1,0 +1,13 @@
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    {{ ln_wan_nic }}:
+      addresses:
+      - {{ wan_ip|indent(1,true) }}/{{ wan_mask }}
+      gateway4: {{ wan_gateway }}
+      nameservers:
+        addresses: {{ dns_server|to_yaml }}
+    {{ ln_lan_nic }}:
+      addresses:
+       -  {{ master_ip|indent(1,true) }}/{{ mask }}

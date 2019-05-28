@@ -1,0 +1,12 @@
+- hosts: all
+  gather_facts: no
+  environment: "{{env_vars}}"
+  roles:
+    # - network
+    # - basic
+    # - slurm
+    # - mpi
+    # - spack
+    # - python
+    # - ganglia
+    # - user

@@ -1,0 +1,88 @@
+---
+# tasks file for ganglia
+- name: install necessary package for ganglia on ln node
+  become: yes
+  apt:
+    name: "{{ item }}"
+    state: present
+  when: inventory_hostname in groups['ln']
+  with_items:
+    - ganglia-monitor
+    - ganglia-webfrontend
+    - gmetad
+    - ganglia-monitor-python
+    - lm-sensors
+- name: install package for ganglia on cn nodes
+  become: yes
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - ganglia-monitor
+    - ganglia-monitor-python
+    - lm-sensors
+  when: inventory_hostname in groups['cn']
+- name: config gmond in cn nodes
+  become: yes
+  template:
+    src: gmond-cn.conf
+    dest: /etc/ganglia/gmond.conf
+    backup: yes
+  when: inventory_hostname in groups['cn']
+  register: gmondc
+- name: restart gmond in cn nodes
+  become: yes
+  service:
+    name: ganglia-monitor
+    state: restarted
+  when: inventory_hostname in groups['cn'] and gmondc.changed
+- name: config gmond in ln nodes
+  become: yes
+  template:
+     src: gmond.conf
+     dest: /etc/ganglia/gmond.conf
+     backup: yes
+  when: inventory_hostname in groups['ln']
+  register: gmondl
+- name: restart gmond in ln node
+  become: yes
+  service:
+    name: ganglia-monitor
+    state: restarted
+  when: inventory_hostname in groups['ln'] and gmondl.changed
+- name: config gmetad in ln nodes
+  become: yes
+  template:
+    src: gmetad.conf
+    dest: /etc/ganglia/gmetad.conf
+  when: inventory_hostname in groups['ln']
+  register: gmetadc
+- name: restart gmetad in ln node
+  become: yes
+  service:
+    name: gmetad
+    state: restarted
+  when: inventory_hostname in groups['ln'] and gmetadc.changed
+- name: config web interface of ganglia
+  become: yes
+  template:
+    src: ganglia.conf
+    dest: /etc/apache2/sites-enabled/ganglia.conf
+  when: inventory_hostname in groups['ln']
+  register: gweb
+- name: restart apache2
+  become: yes
+  service:
+    name: apache2
+    state: restarted
+  when: inventory_hostname in groups['ln'] and gweb.changed
+- name: copy the temperature sensor script
+  copy:
+    src: temg.sh
+    dest: "{{ lookup('env', 'HOME') }}/.temg.sh"
+  when: inventory_hostname in groups['ln']
+- name: add to crontab
+  cron:
+    job: "/bin/bash {{ lookup('env', 'HOME') }}/.temg.sh"
+    name: "temperature monitoring"
+  become: yes

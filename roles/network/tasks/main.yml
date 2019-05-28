@@ -1,0 +1,134 @@
+---
+# tasks file for network
+- name: update host on ln node
+  become: yes
+  template:
+    backup: yes
+    owner: root
+    src: hosts
+    dest: /etc/hosts
+  when: inventory_hostname in groups['ln']
+- name: gather facts after host is specified
+  setup: 
+- name: net plan on ln node
+  template:
+    backup: yes
+    owner: root
+    src: ../templates/60-config.yaml
+    dest: /etc/netplan/60-config.yaml
+  register: lnnetplan
+  become: yes
+  when: inventory_hostname in groups['ln']
+- name: netplan apply
+  become: yes
+  when: inventory_hostname in groups['ln'] and lnnetplan.changed
+  command: netplan apply
+- name: change proxy of apt
+  become: yes
+  template:
+    src: apt.conf
+    dest: /etc/apt/apt.conf
+    backup: yes
+  when: set_proxy
+- name: change the apt source mirror to tuna
+  become: yes
+  copy:
+    src: sources.list
+    dest: /etc/apt/sources.list
+    owner: root
+    backup: yes
+- name: dnsmasq install
+  become: yes
+  apt:
+    update_cache: yes
+    name: dnsmasq
+    state: present
+  when: inventory_hostname in groups['ln']
+- name: dnsmasq config
+  become: yes
+  template:
+    owner: root
+    src: ../templates/dnsmasq.conf
+    dest: /etc/dnsmasq.conf
+    backup: yes
+  register: lndnsmasq
+  when: inventory_hostname in groups['ln']
+- name: dnsmasq host
+  become: yes
+  template:
+    backup: yes
+    src: map.hosts
+    dest: /etc/dnsmasq.d/map.hosts
+  when: inventory_hostname in groups['ln']
+- name: dnsmasq service restart
+  become: yes
+  service:
+    name: dnsmasq
+    state: restarted
+  when: inventory_hostname in groups['ln'] and lndnsmasq.changed  
+- name: enable ip forward on ln nodes
+  become: yes
+  lineinfile:
+    path: /etc/sysctl.conf
+    regexp: "net.ipv4.ip_forward"
+    line: "net.ipv4.ip_forward=1"
+    backup: yes
+  register: lnforward
+  when: inventory_hostname in groups['ln']
+- name: sysctl the ip forward feature
+  become: yes
+  command: sysctl -p /etc/sysctl.conf
+  when:  inventory_hostname in groups['ln'] and lnforward.changed
+- name: iptables for snat on ln nodes
+  iptables:
+     table: nat
+     chain: POSTROUTING
+     destination: "!{{ ip_range }}/{{ mask }}"
+     source: "{{ ip_range }}/{{ mask }}"
+     jump: SNAT
+     to_source: "{{ wan_ip }}"
+  become: yes
+  when: inventory_hostname in groups['ln']
+- name: netplan config on cn nodes
+  become: yes
+  when: inventory_hostname in groups['cn']
+  template:
+    backup: yes
+    owner: root
+    src: ../templates/70-config.yaml
+    dest: /etc/netplan/70-config.yaml
+  register: cnnetplan
+- name: net restart on cn nodes
+  become: yes
+  when: inventory_hostname in groups['cn'] and cnnetplan.changed
+  command: netplan apply
+- name: ensure the hostname is consistent with name in hosts
+  become: yes
+  hostname:
+    name: "{{ inventory_hostname }}"
+  when: inventory_hostname in groups['cn']
+- name: ensure the hostname of master
+  become: yes
+  hostname:
+    name: "{{ master_name }}"
+  when: inventory_hostname in groups['ln']
+- name: refresh the host file
+  become: yes
+  template:
+    src: hosts
+    dest: /etc/hosts
+    owner: root
+    backup: yes
+- name: copy proxy-set
+  template:
+    src: proxy-set
+    dest: /etc/proxy-set
+  become: yes
+  when: set_proxy
+- name: add proxy to profile
+  lineinfile:
+    path: /etc/profile
+    regexp: "#add proxy$"
+    line: "source /etc/proxy-set #add proxy"
+  become: yes
+  when: set_proxy

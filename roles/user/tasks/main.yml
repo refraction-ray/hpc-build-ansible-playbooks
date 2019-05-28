@@ -1,0 +1,76 @@
+---
+# tasks file for user
+- name: create users
+  become: yes
+  user:
+    name: "{{ item.name }}"
+    uid: "{{ item.uid }}"
+    shell: /bin/bash
+    password: "{{ item.password|password_hash('sha512')  }}"
+    update_password: on_create
+    generate_ssh_key: yes
+  with_items: "{{ users }}"
+  when: inventory_hostname in groups['ln']
+- name: permission for home dir
+  become: yes
+  file:
+    mode: "{{ item['home_permission']|default('0700') }}"
+    state: directory
+    path: "/home/{{ item.name }}"
+    owner: "{{ item.name }}"
+  with_items: "{{ users }}"
+  when: inventory_hostname in groups['ln']
+- name: create users in cn
+  become: yes
+  user:
+    name: "{{ item.name }}"
+    uid: "{{ item.uid }}"
+    shell: /bin/bash
+    password: "{{ item.password|password_hash('sha512')  }}"
+    update_password: on_create
+    generate_ssh_key: no
+    create_home: no
+  with_items: "{{ users }}"
+  when: inventory_hostname in groups['cn']
+- name: cat ssh pubkey
+  register: pubkey
+  become: yes
+  when: inventory_hostname in groups['ln']
+  copy:
+    src: "{{ '/home/'+item.name+'/.ssh/id_rsa.pub' }}"
+    dest: "{{ role_path+'/files/'+item.name+'.pub' }}"
+    remote_src: true
+  with_items: "{{ users }}"
+- name: authorized keys add
+  become: yes
+  authorized_key:
+    exclusive: no
+    user: "{{ item.name }}"
+    key: "{{ lookup('file', '../files/'+item.name+'.pub') }}"
+  with_items: "{{ users }}"
+  when: inventory_hostname in groups['ln']
+- name: add user into slurm database
+  command: "sacctmgr -i add user {{ item.name }} account={{ item['sacct_account']|default(sacct_default_account) }} qos={{ item['sacct_qos']|default(sacct_default_qos) }}"
+  when: inventory_hostname in groups['ln']
+  with_items: "{{ users }}"
+  failed_when: r.rc != 1 and r.rc != 0
+  changed_when: r.rc == 0
+  register: r
+- name: add nproc limit to all nodes avoding shell fork
+  become: yes
+  copy:
+    src: nproc.conf
+    dest: /etc/security/limits.d/nproc.conf
+- name: add memory limit to ln nodes for normal user
+  become: yes
+  copy:
+    src: memory.conf
+    dest: /etc/security/limits.d/memory.conf
+  when: inventory_hostname in groups['ln']
+- name: fs quota limit on ln nodes
+  become: yes
+  command: "setquota -u {{ item.name }} {{ item['quota_soft']|default(quota_default_soft) }}  {{ item['quota_hard']|default(quota_default_hard) }} 0 0 {{ quota_root }} "
+  when: inventory_hostname in groups['ln'] and set_quota
+  with_items: "{{ users }}"
+  changed_when: r.rc != 0
+  register: r

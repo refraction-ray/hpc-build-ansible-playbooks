@@ -1,0 +1,17 @@
+---
+# defaults file for user
+set_quota: yes
+sacct_default_account: root
+sacct_default_qos: normal
+quota_default_soft: 0
+quota_default_hard: 0
+quota_root: "/"
+users:
+  - name: "test0"
+    uid: 20000
+    password: "123456sobad"
+    quota_soft: 10G
+    quota_hard: 20G
+    home_permission: "0755"
+    sacct_account: root
+    sacct_qos: normal

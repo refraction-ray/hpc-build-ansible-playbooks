@@ -1,0 +1,14 @@
+---
+# tasks file for mpi
+- name: install necessary packages for openmpi
+  become: yes
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ mpi_packages }}"
+- name: change openmpi config
+  become: yes
+  lineinfile:
+    path: /etc/openmpi/openmpi-mca-params.conf
+    regexp: "^btl_base_warn_component_unused = 0"
+    line: "btl_base_warn_component_unused = 0"

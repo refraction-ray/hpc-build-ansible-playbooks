@@ -1,0 +1,7 @@
+vars/
+meta/
+handlers/
+tests/
+*_vars/*.yml
+*.pub
+munge.key

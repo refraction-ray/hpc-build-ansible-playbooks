@@ -1,0 +1,38 @@
+---
+# tasks file for python
+- name: create .pip dir
+  file:
+    path: "{{ lookup('env', 'HOME')+'/.pip' }}"
+    state: directory
+  when: inventory_hostname in groups['ln']
+- name: pip config in etc
+  copy:
+    src: pip.conf
+    dest: /etc/pip.conf
+    backup: yes
+  become: yes
+  when: inventory_hostname in groups['ln']
+- name: pip config in home
+  copy:
+    src: pip.conf
+    dest: "{{ lookup('env', 'HOME')+'/.pip/pip.conf' }}"
+    backup: yes
+  when: inventory_hostname in groups['ln']
+## the following steps are optional
+- name: find spack py path
+  shell: "source {{spack_path}}/share/spack/setup-env.sh&&spack location -i python@3.6"
+  args:
+    executable: /bin/bash
+  when: inventory_hostname in groups['ln']
+  register: python_location 
+- name: pythonpath add for intelpython3
+  become: yes
+  template:
+    src: spack.pth
+    dest: /opt/intel/intelpython3/lib/python3.6/site-packages/spack.pth 
+  when: inventory_hostname in groups['ln']
+#- name: change the folder permission
+# command: chmod -c -R u=rw,go=r,a-x+X "{{item}}"
+# with_items:
+#   -  "{{ lookup('env', 'HOME')+'/.local' }}"
+# when: inventory_hostname in groups['ln']

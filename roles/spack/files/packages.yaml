@@ -1,0 +1,37 @@
+packages:
+  openmpi:
+    paths:
+      openmpi@2.1.1%gcc: /usr/lib/x86_64-linux-gnu/openmpi
+  slurm:
+    paths:
+      slurm@17.11.2%gcc: /usr/lib/x86_64-linux-gnu/slurm-wlm
+  jdk:
+    paths:
+      jdk@1.8.0_212 %gcc@7.4.0 arch=linux-ubuntu18.04-x86_64: /usr/lib/jvm/java-8-openjdk-amd64
+    version:
+    - 1.8.0_212
+  mathematica:
+    paths:
+      mathematica@11.0.1: /opt/mathematica/11.0.1
+  intel-parallel-studio:
+    paths:
+      intel-parallel-studio@2019: /opt/intel
+    compiler: [intel@2019]
+  intel-mkl:
+    paths:
+      intel-mkl@2019: /opt/intel/mkl
+  intel-mpi:
+    paths:
+      intel-mpi@2019: /opt/intel/impi
+  petsc:
+    paths:
+      petsc@3.11.2%intel: /home/ubuntu/softwares/petsc-slepc/petsc-3.11.2
+  slepc:
+    paths:
+      slepc@3.11.1%intel: /home/ubuntu/softwares/petsc-slepc/slepc-3.11.1  
+ #all:
+   #providers:
+    # mpi:       [openmpi, intel-parallel-studio+mpi]
+    # blas:      [openblas, intel-parallel-studio+mkl]
+    # lapack:    [openblas, intel-parallel-studio+mkl]
+    # scalapack: [netlib-scalapack, intel-parallel-studio+mkl]

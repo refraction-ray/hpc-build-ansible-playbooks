@@ -1,0 +1,111 @@
+---
+# tasks file for basic
+- name: ensure en locale
+  become: yes
+  locale_gen:
+    name: en_US.UTF-8
+    state: present
+- name: ensure timezone
+  become: yes
+  timezone:
+    name: "{{ timezone }}"
+- name: install some apt packs on nodes
+  become: yes
+  apt:
+    name: "{{ aptpacks }}"
+    state: present
+    update_cache: yes
+- name: update ntp config file on ln node
+  become: yes
+  template:
+    src: ../templates/ntp.conf
+    dest: /etc/ntp.conf
+    owner: root
+    backup: yes
+  register: lnntp
+  when: inventory_hostname in groups['ln']
+- name: restart ntp service on lg node
+  become: yes
+  service:
+    name: ntp
+    state: restarted
+  when: inventory_hostname in groups['ln'] and lnntp.changed
+- name: update ntp config file on cn nodes
+  become: yes
+  lineinfile:
+    path: /etc/ntp.conf
+    regexp: "^server .*$"
+    line: "server {{ master_name }}  prefer"
+  register: ntpconfig
+  when: inventory_hostname in groups['cn']
+- name: restart ntp service on cn nodes
+  become: yes
+  service:
+    name: ntp
+    state: restarted
+  when: inventory_hostname in groups['cn'] and ntpconfig.changed
+- name: install nfs server on ln node
+  become: yes
+  apt:
+    name: nfs-kernel-server
+    state: present
+  when: inventory_hostname in groups['ln']
+- name: update nfs config file on ln node
+  become: yes
+  template:
+    src: ../templates/exports
+    dest: /etc/exports
+    backup: yes
+    owner: root
+  register: lnnfs
+  when: inventory_hostname in groups['ln']
+- name: restart nfs service
+  become: yes
+  service:
+    name: nfs-kernel-server
+    state: restarted
+  when: lnnfs.changed and inventory_hostname in groups['ln']
+- name: make sure the mount dir exist in cn nodes
+  when: inventory_hostname in groups['cn']
+  become: yes
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items: "{{ nfs_dir }}"
+- name: mount dir in cn nodes
+  become: yes
+  mount:
+    name: "{{ item }}"
+    src: "{{ master_name }}:{{ item }}"
+    fstype: nfs
+    state: mounted
+  when: inventory_hostname in groups['cn']
+  with_items: "{{ nfs_dir }}"
+- name: extra mount for all nodes
+  become: yes
+  mount:
+    name:  "{{ item.name }}"
+    src:  "{{ item.src }}"
+    fstype: nfs
+    state: mounted
+  with_items: "{{ extra_mounts }}"
+- name: update ssh config in all nodes
+  become: yes
+  copy:
+    src: sshd_config
+    dest: /etc/ssh/sshd_config
+    backup: yes
+  register: sshdupdate
+- name: restart ssh
+  become: yes
+  service:
+    name: sshd
+    state: restarted
+  when: sshdupdate.changed
+- name: remove welcome message
+  become: yes
+  file:
+    path: /etc/update-motd.d/
+    mode: '0644'
+    state: directory
+    recurse: yes

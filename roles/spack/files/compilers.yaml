@@ -1,0 +1,24 @@
+compilers:
+- compiler:
+    environment: {}
+    extra_rpaths: []
+    flags: {}
+    modules: []
+    operating_system: ubuntu18.04
+    paths:
+      cc: /usr/bin/gcc
+      cxx: /usr/bin/g++
+      f77: /usr/bin/gfortran
+      fc: /usr/bin/gfortran
+    spec: gcc@7.4.0
+    target: x86_64
+- compiler:
+    operating_system: ubuntu18.04
+    modules: [intel-parallel-studio-2019-gcc-7.4.0-xl]
+    paths:
+      cc: /opt/intel/compilers_and_libraries/linux/bin/intel64/icc
+      cxx: /opt/intel/compilers_and_libraries/linux/bin/intel64/icpc
+      f77: /opt/intel/compilers_and_libraries/linux/bin/intel64/ifort
+      fc: /opt/intel/compilers_and_libraries/linux/bin/intel64/ifort
+    spec: intel@2019
+    target: x86_64
