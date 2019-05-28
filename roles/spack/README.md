@@ -1,38 +1,15 @@
-Role Name
+Spack
 =========
 
-A brief description of the role goes here.
+This role will install spack, a flexible HPC package manager and configure it.
 
-Requirements
-------------
-
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+See defaults/main.yml. Only spack_path is needed, which specify the install path of spack. We highly recommend you install it on some admin user's home directory, which can be available for all users. For clusters, it is important to share /home on master to all nodes via nfs, such that spack is available to all nodes.
 
-Dependencies
-------------
+Templates and Files
+--------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
-
-Example Playbook
-----------------
-
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
-
-License
--------
-
-BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+It is worth noting that spack config yaml files in files dir are very **specific** and not universal at all. It assumes that you would install intel parallel studio on /opt dir. Especially, in packages.yaml, there is specific information on external packages' path which you may want to edit before running the role.

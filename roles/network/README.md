@@ -1,38 +1,20 @@
-Role Name
+Network
 =========
 
-A brief description of the role goes here.
+This role is designed to configure the network of the cluster including master as dns and dhcp server in LAN, NAT enable network on compute nodes and some proxy settings.
 
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+No requirement as long as admin user account are consistent across machines. It is actually the first role to run, which make the cluster accessible and network connected.
 
 Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+See defaults/main.yml. You need to specify set_proxy to no, if your system is not air-gapped and free to connect to the internet.
 
-Dependencies
-------------
+Templates and Files
+--------------
+sources.list in files dir changes the default apt source to a mirror. You may want to change this behavior depending on your own network conditions.
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
-
-Example Playbook
-----------------
-
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
-
-License
--------
-
-BSD
-
-Author Information
-------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+hosts in templates dir has some extra host items. You may want to delete or change this depending on your system.

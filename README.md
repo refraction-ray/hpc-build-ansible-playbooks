@@ -25,7 +25,7 @@ $ cd <project-folder>
 $ ansible-playbook -i hosts site.yml -Kvv ## enter sudo user password for the next prompt
 ```
 
-### Possible approach beginning from bare metals
+### Possible approach start from scratch
 
 * Install OS on the master node and directly `apt install ansible`. Then git clone this repo somewhere locally. Configure the inventory files and host_vars to include all possible machines with the knowledge of their mac address.
 * Possible a first Ansible run on master only with a complete inventory file (to generate complete hosts and mac-ip binding dhcp service). `network`, `basic` roles are suggested. A command `sudo ip addr add <lan_ip> dev <lan_nic>` is recommended before running network Ansible roles.
@@ -44,9 +44,9 @@ Ansible cannot do everything, and for some flexible and risky jobs, you may want
 
 ### Limitations
 
-These ansible playbooks here are very limited to a small cluster setup, where only one master/login node with possible several tens of homogeneous compute nodes.
+These ansible playbooks here are very limited to a small cluster setup, where only one master/login node with possible several dozens of homogeneous compute nodes.
 
-For a larger cluster setup, there should be more than one login nodes, and different master nodes may play different roles (some provide disk storage, some provide slurm database, some provide slurm controller, some provide bakup…). Besides, in such scale, the compute nodes are highly likely to be heterogeneous (some with big memory, some with GPU resource...), more detailed setups and carefully designed slurm configurations are need in such scenario. It is in princinple OK to generalize our playbook for such large HPC clusters, but more effort should be paid instead of directly applying the playbooks here.
+For a larger cluster setup, there should be more than one login nodes, and different master nodes may play different roles (some provide disk storage, some provide slurm database, some provide slurm controller, some provide bakup…). Besides, in such scale, the compute nodes are highly likely to be heterogeneous (some with big memory, some with GPU resource...), more detailed setups and carefully designed slurm configurations are needed in such scenario. It is in princinple OK to generalize our playbook for such large HPC clusters, but more effort should be paid instead of directly applying the playbooks here.
 
 ## Platform information
 
