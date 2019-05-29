@@ -9,6 +9,13 @@
   become: yes
   timezone:
     name: "{{ timezone }}"
+  register: tz
+- name: sync the timezone of rsyslog
+  become: yes
+  when: tz.changed
+  service:
+    name: rsyslog
+    state: restarted
 - name: install some apt packs on nodes
   become: yes
   apt:

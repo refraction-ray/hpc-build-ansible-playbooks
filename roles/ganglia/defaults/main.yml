@@ -1,3 +1,5 @@
 ---
 # defaults file for ganglia
 ganglia_url: ganglia
+ganglia_http_user: admin
+ganglia_http_pass: 123456notgood

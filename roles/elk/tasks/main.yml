@@ -1,0 +1,159 @@
+---
+# tasks file for elk
+- name: install python3 apt for apt repo task
+  become: yes
+  apt:
+    name: python3-apt
+    state: present
+ #when: inventory_hostname in groups['ln']
+- name: add elastic apt key
+  become: yes
+  apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+ #when: inventory_hostname in groups['ln']
+- name: add elastic repos for apt
+  become: yes
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/6.x/apt stable main"
+    state: present
+    update_cache: yes
+ #when: inventory_hostname in groups['ln']
+- name: install elastic
+  become: yes
+  apt:
+    name: elasticsearch
+    state: present
+  when: inventory_hostname in groups['ln']
+- name: elastic config
+  become: yes
+  template:
+    src: elasticsearch.yml
+    dest: /etc/elasticsearch/elasticsearch.yml
+    owner: root
+    group: elasticsearch
+    mode: 0640
+  when: inventory_hostname in groups['ln']
+  register: esconf
+- name: elasticsearch start
+  become: yes
+  service:
+    name: elasticsearch
+    state: restarted
+    enabled: yes
+  when: inventory_hostname in groups['ln'] and esconf.changed
+- name: install kibana
+  become: yes
+  apt:
+    name: kibana
+    state: present
+  when: inventory_hostname in groups['ln']
+  register: kibanains
+- name: service kibana enable and start
+  become: yes
+  service:
+    name: kibana
+    state: restarted
+    enabled: yes
+  when: inventory_hostname in groups['ln'] and kibanains.changed
+- name: install nginx
+  become: yes
+  apt:
+    name: nginx
+    state: present
+  when: inventory_hostname in groups['ln']
+- name: delete default nginx page
+  become: yes
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  when: inventory_hostname in groups['ln']
+  register: rmdefault
+- name: add kibana http password
+  become: yes
+  htpasswd:
+    path: /etc/nginx/.htpasswd
+    name: "{{ kibana_http_user }}"
+    password: "{{ kibana_http_pass }}"
+    owner: root
+    mode: 0644
+  when: inventory_hostname in groups['ln']
+  register: nginxpass
+- name: nginx kibana server set
+  template:
+    src: kibana.conf
+    dest: /etc/nginx/sites-enabled/kibana.conf
+  become: yes
+  when: inventory_hostname in groups['ln']
+  register: kibanaserver
+- name: restart nginx
+  become: yes
+  service:
+    name: nginx
+    state: restarted
+    enabled: yes
+  when: inventory_hostname in groups['ln'] and (rmdefault.changed or nginxpass.changed or kibanaserver.changed)
+- name: install logstash
+  become: yes
+  apt:
+    name: logstash
+    state: present
+  when: inventory_hostname in groups['ln']
+- name: config logstash
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/logstash/conf.d/{{ item }}"
+  become: yes
+  when: inventory_hostname in groups['ln']
+  register: logstashconf
+  with_items:
+    - "02-beats-input.conf"
+    - "10-syslog-filter.conf"
+    - "30-elasticsearch-output.conf"
+- name: restart logstash service
+  become: yes
+  service:
+    name: logstash
+    state: restarted
+    enabled: yes
+  when: inventory_hostname in groups['ln'] and logstashconf.changed
+- name: install filebeat
+  become: yes
+  apt: 
+    name: filebeat
+    state: present
+- name: config filebeat
+  become: yes
+  template:
+    src: filebeat.yml
+    dest: /etc/filebeat/filebeat.yml
+    owner: root
+    mode: 0600
+  register: filebeatconf
+- name: start filebeat service
+  become: yes
+  service:
+    name: filebeat
+    state: started
+    enabled: yes
+- name: enable filebeat module in login node
+  become: yes
+  command: "filebeat modules enable {{item}}"
+  with_items:
+     "{{ filebeat_ln_modules }}"
+  when: inventory_hostname in groups['ln']
+  register: r
+  changed_when: r.stdout.startswith("Enable")
+- name: enable filebeat module in compute nodes
+  become: yes
+  command: "filebeat modules enable {{item}}"
+  with_items:
+     "{{ filebeat_cn_modules }}"
+  when: inventory_hostname in groups['ln']
+  register: rcn
+  changed_when: rcn.stdout.startswith("Enable")
+- name: restart filebeat
+  become: yes
+  service:
+    name: filebeat
+    state: restarted  
+  when:  r.changed or filebeatconf.changed or rcn.changed

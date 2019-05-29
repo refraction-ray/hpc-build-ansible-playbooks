@@ -70,12 +70,29 @@
     dest: /etc/apache2/sites-enabled/ganglia.conf
   when: inventory_hostname in groups['ln']
   register: gweb
+- name: install passlib for password protection on apache
+  become: yes
+  apt:
+    name: python3-passlib
+    state: present
+  when: inventory_hostname in groups['ln']
+- name: setup apache passwd
+  htpasswd:
+    path: /etc/apache2/.htpasswd
+    name: "{{ ganglia_http_user }}"
+    password: "{{ ganglia_http_pass }}"
+    owner: root
+    group: www-data
+    mode: 0640
+  become: yes
+  when: inventory_hostname in groups['ln']
+  register: passwd
 - name: restart apache2
   become: yes
   service:
     name: apache2
     state: restarted
-  when: inventory_hostname in groups['ln'] and gweb.changed
+  when: inventory_hostname in groups['ln'] and (gweb.changed or passwd.changed)
 - name: copy the temperature sensor script
   copy:
     src: temg.sh
