@@ -25,6 +25,10 @@ $ cd <project-folder>
 $ ansible-playbook -i hosts site.yml -Kvv ## enter sudo user password for the next prompt
 ```
 
+### Some notes
+
+* The playbooks should be located in a directory with permission 600 since it has lots of secret information and normal users shouldn't access them.
+
 ### Possible approach start from scratch
 
 * Install OS on the master node and directly `apt install ansible`. Then git clone this repo somewhere locally. Configure the inventory files and host_vars to include all possible machines with the knowledge of their mac address.

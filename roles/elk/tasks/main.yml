@@ -5,19 +5,16 @@
   apt:
     name: python3-apt
     state: present
- #when: inventory_hostname in groups['ln']
 - name: add elastic apt key
   become: yes
   apt_key:
     url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
- #when: inventory_hostname in groups['ln']
 - name: add elastic repos for apt
   become: yes
   apt_repository:
     repo: "deb https://artifacts.elastic.co/packages/6.x/apt stable main"
     state: present
     update_cache: yes
- #when: inventory_hostname in groups['ln']
 - name: install elastic
   become: yes
   apt:
@@ -99,7 +96,7 @@
     state: present
   when: inventory_hostname in groups['ln']
 - name: config logstash
-  copy:
+  template:
     src: "{{ item }}"
     dest: "/etc/logstash/conf.d/{{ item }}"
   become: yes

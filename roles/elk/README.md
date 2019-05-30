@@ -13,7 +13,7 @@ python3-passlib should be installed to confige http authetication, which is done
 Role Variables
 --------------
 
-See defaults/main.yml. kibana_http_* vars are used for authticate web access.
+See defaults/main.yml. kibana_http_* vars are used for authticating web access.
 
 Templates and Files
 --------------
