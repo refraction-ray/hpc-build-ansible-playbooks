@@ -7,3 +7,5 @@ tests/
 munge.key
 site.retry
 ._README.md
+*.fuse*
+cgrules.conf

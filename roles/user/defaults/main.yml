@@ -6,6 +6,9 @@ sacct_default_qos: normal
 quota_default_soft: 0
 quota_default_hard: 0
 quota_root: "/"
+other_user_dir: yes
+data_root:
+  - "/DATA"
 users:
   - name: "test0"
     uid: 20000

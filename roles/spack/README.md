@@ -3,6 +3,11 @@ Spack
 
 This role will install spack, a flexible HPC package manager and configure it.
 
+Requirements
+-------------
+
+You may want to config git by `git config --global url.https://github.com/.insteadOf git://github.com/` for air-gapped cluster, otherwise `spack install lmod` doesn't work since some of the dependences would be fetched by git which won't go through http proxy by default.
+
 
 Role Variables
 --------------

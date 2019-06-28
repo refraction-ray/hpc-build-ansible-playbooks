@@ -20,6 +20,15 @@
     owner: "{{ item.name }}"
   with_items: "{{ users }}"
   when: inventory_hostname in groups['ln']
+- name: create dir in DATA
+  become: yes
+  file:
+    mode: "0755"
+    state: directory
+    path: "{{ item[1] }}/{{ item[0].name }}"
+    owner: "{{ item[0].name }}"
+  loop: "{{ users |product(data_root)|list }}"
+  when: inventory_hostname in groups['ln'] and other_user_dir
 - name: create users in cn
   become: yes
   user:

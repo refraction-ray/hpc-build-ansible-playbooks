@@ -79,6 +79,17 @@
   become: yes
   command: sysctl -p /etc/sysctl.conf
   when:  inventory_hostname in groups['ln'] and lnforward.changed
+- name: iptables for snat on tinc part
+  when: inventory_hostname in groups['ln'] and use_tinc
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    destination: "!{{ ip_range }}/{{ mask }}"
+    source: "{{ ip_range }}/{{ mask }}"
+    jump: SNAT
+    out_interface: "{{ tinc_if }}"
+    to_source: "{{ tinc_ip }}"
+  become: yes
 - name: iptables for snat on ln nodes
   iptables:
      table: nat

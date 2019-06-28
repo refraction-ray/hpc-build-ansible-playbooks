@@ -1,0 +1,31 @@
+---
+# tasks file for cgroup
+- name: install cgroup tool
+  become: yes
+  apt:
+    name: cgroup-tools
+    state: present
+  when: inventory_hostname in groups['ln']
+- name: copy cgconfig
+  become: yes
+  copy: 
+    src: cgconfig.conf
+    dest: /etc/cgconfig.conf
+  when: inventory_hostname in groups['ln']
+  register: cgconf
+- name: update cgroup fs
+  become: yes
+  when: inventory_hostname in groups['ln'] and cgconf.changed
+  command: "/usr/sbin/cgconfigparser -l /etc/cgconfig.conf"
+- name: copy cgrules
+  become: yes
+  copy:
+    src: cgrules.conf
+    dest: /etc/cgrules.conf
+  when: inventory_hostname in groups['ln']
+  register: cgruleconf
+- name: restart cgd
+  become: yes
+  #  command: "kill `ps aux|grep cgrulesengd|head -n 1|awk '{print $2}' && /usr/sbin/cgrulesengd"
+  shell: "/usr/sbin/cgrulesengd"
+  when: inventory_hostname in groups['ln'] and cgruleconf.changed

@@ -1,3 +1,5 @@
 ---
 # defaults file for network
 set_proxy: yes
+use_tinc: no
+tinc_if: tinc

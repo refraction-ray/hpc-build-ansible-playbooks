@@ -1,0 +1,4 @@
+elasticsearch cpuset service/
+kibana        cpuset service/
+logstash      cpuset service/
+test          cpuset usersoft/

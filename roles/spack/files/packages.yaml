@@ -13,6 +13,9 @@ packages:
   mathematica:
     paths:
       mathematica@11.0.1: /opt/mathematica/11.0.1
+  matlab:
+    paths:
+      matlab@2018b: /opt/matlab/2018b
   intel-parallel-studio:
     paths:
       intel-parallel-studio@2019: /opt/intel
