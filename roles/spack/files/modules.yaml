@@ -12,6 +12,10 @@ modules:
     intel-parallel-studio:
       filter:
         environment_blacklist: ['PS1']
+      environment:
+        set:
+          FI_PROVIDER_PATH: "/opt/intel/compilers_and_libraries_2019.3.199/linux/mpi/intel64/libfabric/lib/prov"
+          FI_PROVIDER: sockets
     petsc:
       environment:
         set:

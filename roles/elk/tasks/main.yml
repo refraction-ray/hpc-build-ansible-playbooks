@@ -31,6 +31,13 @@
     mode: 0640
   when: inventory_hostname in groups['ln']
   register: esconf
+- name: ensure es is started
+  become: yes
+  service:
+    name: elasticsearch
+    state: started
+    enabled: yes
+  when: inventory_hostname in groups['ln']
 - name: elasticsearch start
   become: yes
   service:
@@ -45,6 +52,13 @@
     state: present
   when: inventory_hostname in groups['ln']
   register: kibanains
+- name: ensure kibana is started
+  become: yes
+  service:
+    name: kibana
+    state: started
+    enabled: yes
+  when: inventory_hostname in groups['ln']
 - name: service kibana enable and start
   become: yes
   service:
@@ -82,6 +96,13 @@
   become: yes
   when: inventory_hostname in groups['ln']
   register: kibanaserver
+- name: ensure nginx is started
+  become: yes
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+  when: inventory_hostname in groups['ln']
 - name: restart nginx
   become: yes
   service:
@@ -106,6 +127,12 @@
     - "02-beats-input.conf"
     - "10-syslog-filter.conf"
     - "30-elasticsearch-output.conf"
+- name: ensure lgostash is started
+  service:
+    name: logstash
+    state: started
+  when: inventory_hostname in groups['ln']
+  become: yes
 - name: restart logstash service
   become: yes
   service:
@@ -126,12 +153,11 @@
     owner: root
     mode: 0600
   register: filebeatconf
-- name: start filebeat service
+- name: ensure fb is started
   become: yes
   service:
     name: filebeat
     state: started
-    enabled: yes
 - name: enable filebeat module in login node
   become: yes
   command: "filebeat modules enable {{item}}"

@@ -30,6 +30,12 @@
     backup: yes
   when: inventory_hostname in groups['cn']
   register: gmondc
+- name: ensure gmond is started
+  become: yes
+  service:
+    name: ganglia-monitor
+    state: started
+  when: inventory_hostname in groups['cn']
 - name: restart gmond in cn nodes
   become: yes
   service:
@@ -44,6 +50,13 @@
      backup: yes
   when: inventory_hostname in groups['ln']
   register: gmondl
+- name: ensure gmond started in ln
+  become: yes
+  service:
+    name: ganglia-monitor
+    state: started
+    enabled: yes
+  when: inventory_hostname in groups['ln']
 - name: restart gmond in ln node
   become: yes
   service:
@@ -57,6 +70,13 @@
     dest: /etc/ganglia/gmetad.conf
   when: inventory_hostname in groups['ln']
   register: gmetadc
+- name: ensure gmetad started in ln
+  become: yes
+  service:
+    name: gmetad
+    state: started
+    enabled: yes
+  when: inventory_hostname in groups['ln']
 - name: restart gmetad in ln node
   become: yes
   service:
@@ -87,6 +107,13 @@
   become: yes
   when: inventory_hostname in groups['ln']
   register: passwd
+- name: ensure apache is started
+  become: yes
+  service:
+    name: apache2
+    state: started
+    enabled: yes
+  when: inventory_hostname in groups['ln']
 - name: restart apache2
   become: yes
   service:

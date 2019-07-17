@@ -11,3 +11,4 @@ network:
     {{ ln_lan_nic }}:
       addresses:
        -  {{ master_ip|indent(1,true) }}/{{ mask }}
+      mtu: 9000

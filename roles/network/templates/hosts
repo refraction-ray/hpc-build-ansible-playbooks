@@ -17,4 +17,4 @@ ff02::3 ip6-allhosts
 {% endfor %}
 
 # other hostnames
-192.168.48.50  d1
+# 192.168.48.50  d1

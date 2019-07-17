@@ -60,6 +60,12 @@
     src: map.hosts
     dest: /etc/dnsmasq.d/map.hosts
   when: inventory_hostname in groups['ln']
+- name: ensure dnsmasq service is started
+  become: yes
+  service:
+    name: dnsmasq
+    state: started
+  when: inventory_hostname in groups['ln']
 - name: dnsmasq service restart
   become: yes
   service:
@@ -143,3 +149,11 @@
     line: "source /etc/proxy-set #add proxy"
   become: yes
   when: set_proxy
+- name: enable jumbo frame on ln
+  become: yes
+  command: "ip link set {{ ln_lan_nic }} mtu 9000"
+  when: inventory_hostname in groups['ln']
+- name: enable jumbo frame on cn
+  become: yes
+  command: "ip link set {{ ansible_facts['default_ipv4']['interface'] }} mtu 9000"
+  when: inventory_hostname in groups['cn']

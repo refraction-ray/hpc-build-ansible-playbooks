@@ -32,6 +32,9 @@ packages:
   slepc:
     paths:
       slepc@3.11.1%intel: /home/ubuntu/softwares/petsc-slepc/slepc-3.11.1  
+  armadillo:
+    paths:
+      armadillo@9.300.2%intel: /home/ubuntu/softwares/armadillo/armadillo-9.300.2
  #all:
    #providers:
     # mpi:       [openmpi, intel-parallel-studio+mpi]

@@ -26,6 +26,12 @@
     mode: "400"
   become: yes
   register: cnmungekey
+- name: ensure munged is started
+  become: yes
+  service:
+    name: munge
+    state: started
+    enabled: yes
 - name: restart munged
   become: yes
   service:
@@ -65,12 +71,24 @@
     dest: /etc/security/access.conf
     backup: yes
   when: inventory_hostname in groups['cn']
+- name: ensure slurmctld is started
+  become: yes
+  service:
+    name: slurmctld
+    state: started
+  when: inventory_hostname in groups['ln']
 - name: start slurmctld
   become: yes
   service:
     name: slurmctld
     state: restarted
   when: inventory_hostname in groups['ln'] and (lnslurm.changed or lncgroup.changed)
+- name: ensure slurmd is started
+  become: yes
+  service:
+    name: slurmd
+    enabled: yes
+    state: started
 - name: start slurmd
   become: yes
   service:
@@ -124,6 +142,12 @@
     dest: /etc/slurm-llnl/slurmdbd.conf
     backup: yes
   register: slurmdbdconf
+- name: ensure slurmdbd is started
+  become: yes
+  service: 
+    name: slurmdbd
+    state: started
+  when: inventory_hostname in groups['ln']
 - name: restart slurmdbd
   become: yes
   when: inventory_hostname in groups['ln'] and slurmdbdconf.changed

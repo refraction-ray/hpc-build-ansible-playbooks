@@ -15,6 +15,7 @@ aptpacks:
   - unzip
   - openjdk-8-jdk
   - pandoc
+extra_mounts_bool: no
 extra_mounts:
   - name: /SCRATCH
     src: d1:/SCRATCH

@@ -22,6 +22,11 @@
     name: "{{ aptpacks }}"
     state: present
     update_cache: yes
+- name: ensure ntp sevice is started
+  become: yes
+  service:
+    name: ntp
+    state: started
 - name: update ntp config file on ln node
   become: yes
   template:
@@ -66,6 +71,12 @@
     owner: root
   register: lnnfs
   when: inventory_hostname in groups['ln']
+- name: ensure nfs service start on ln node
+  become: yes
+  service:
+    name: nfs-kernel-server
+    state: started
+  when: inventory_hostname in groups['ln']
 - name: restart nfs service
   become: yes
   service:
@@ -96,6 +107,7 @@
     fstype: nfs
     state: mounted
   with_items: "{{ extra_mounts }}"
+  when: extra_mounts_bool
 - name: update ssh config in all nodes
   become: yes
   copy:
@@ -103,6 +115,11 @@
     dest: /etc/ssh/sshd_config
     backup: yes
   register: sshdupdate
+- name: ensure ssh server is started
+  become: yes
+  service:
+    name: sshd
+    state: started
 - name: restart ssh
   become: yes
   service:
