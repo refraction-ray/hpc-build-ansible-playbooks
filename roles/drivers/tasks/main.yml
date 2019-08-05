@@ -1,0 +1,20 @@
+---
+# tasks file for drivers
+- name: install python3 apt for apt repo task
+  become: yes
+  apt:
+    name: python3-apt
+    state: present
+- name: add nvidia repo
+  become: yes
+  apt_repository:
+    repo: "ppa:graphics-drivers/ppa"
+    state: present
+    update_cache: yes
+  when: inventory_hostname in groups['gn'] 
+- name: install gpu driver
+  become: yes
+  apt:
+    name: "{{ driver_name }}"
+    state: present
+  when: inventory_hostname in groups['gn'] 

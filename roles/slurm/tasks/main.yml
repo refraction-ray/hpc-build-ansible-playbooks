@@ -89,12 +89,13 @@
     name: slurmd
     enabled: yes
     state: started
-- name: start slurmd
+  when: inventory_hostname in groups['cn']
+- name: restart slurmd
   become: yes
   service:
     name: slurmd
     state: restarted
-  when: lnslurm.changed or lncgroup.changed
+  when: (lnslurm.changed or lncgroup.changed) and inventory_hostname in groups['cn']
 - name: install slurmdbd on master
   become: yes
   when: inventory_hostname in groups['ln']

@@ -6,3 +6,5 @@ network:
       dhcp4: yes
       gateway4: {{ master_ip }}
       mtu: 9000
+      match:
+        macaddress: {{ ansible_facts['default_ipv4']['macaddress'] }}

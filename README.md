@@ -12,9 +12,11 @@ Node: One machine
 
 Login node: Node that can be accessed from outside network
 
-Master node: Node that run central services in the cluster. In our setup, login and master are the same node.
+Master node: Node that run central services in the cluster. In our setup, login and master are the same node, [ln] group.
 
-Compute nodes: Nodes for running jobs.
+Compute nodes: Nodes for running jobs, [cn] group.
+
+GPU nodes: Nodes equipped with Nvidia GPUs, [gn] group.
 
 ## Usage
 

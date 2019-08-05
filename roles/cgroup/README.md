@@ -6,7 +6,7 @@ This role is designed to manage cgroup and resource limit by user or app basis.
 Requirements
 ------------
 
-You must have these user created defined in `cgrules.conf`.
+You must have these user created defined in `cgrules.conf`. For example, ELK stack users restriction must be added after install of ELK stack.
 
 Templates and Files
 --------------

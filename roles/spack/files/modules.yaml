@@ -14,8 +14,10 @@ modules:
         environment_blacklist: ['PS1']
       environment:
         set:
-          FI_PROVIDER_PATH: "/opt/intel/compilers_and_libraries_2019.3.199/linux/mpi/intel64/libfabric/lib/prov"
+          FI_PROVIDER_PATH: "/opt/intel/compilers_and_libraries_2019.4.243/linux/mpi/intel64/libfabric/lib/prov"
           FI_PROVIDER: sockets
+        prepend_path:
+          LD_LIBRARY_PATH: "/opt/intel/itac/2019.4.036/intel64/slib:/opt/intel/compilers_and_libraries_2019.4.243/linux/compiler/lib/intel64_lin:/opt/intel/compilers_and_libraries_2019.4.243/linux/mpi/intel64/libfabric/lib:/opt/intel/compilers_and_libraries_2019.4.243/linux/mpi/intel64/lib/release:/opt/intel/compilers_and_libraries_2019.4.243/linux/mpi/intel64/lib:/opt/intel/compilers_and_libraries_2019.4.243/linux/ipp/lib/intel64:/opt/intel/compilers_and_libraries_2019.4.243/linux/mkl/lib/intel64_lin:/opt/intel/compilers_and_libraries_2019.4.243/linux/tbb/lib/intel64/gcc4.7:/opt/intel/debugger_2019/libipt/intel64/lib:/opt/intel/compilers_and_libraries_2019.4.243/linux/daal/lib/intel64_lin:/opt/intel/compilers_and_libraries_2019.4.243/linux/daal/../tbb/lib/intel64_lin/gcc4.4:/opt/intel/lib"
     petsc:
       environment:
         set:

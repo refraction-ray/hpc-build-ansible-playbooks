@@ -27,6 +27,7 @@
   service:
     name: ntp
     state: started
+    enabled: yes
 - name: update ntp config file on ln node
   become: yes
   template:

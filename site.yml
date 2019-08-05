@@ -4,6 +4,7 @@
   roles:
     # - network
     # - basic
+    # - drivers
     # - slurm
     # - mpi
     # - spack
@@ -11,4 +12,5 @@
     # - ganglia
     # - user
     # - elk
+    # - elastalert
     # - cgroup

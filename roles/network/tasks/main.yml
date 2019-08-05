@@ -37,6 +37,11 @@
     dest: /etc/apt/sources.list
     owner: root
     backup: yes
+- name: turn off unattended updates
+  become: yes
+  copy:
+    src: 20auto-upgrades
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
 - name: dnsmasq install
   become: yes
   apt:
@@ -124,6 +129,13 @@
   hostname:
     name: "{{ inventory_hostname }}"
   when: inventory_hostname in groups['cn']
+- name: disable cloud init reverting hostname when rebooting
+  become: yes
+  lineinfile:
+    path: /etc/cloud/cloud.cfg
+    regexp: "preserve_hostname:"
+    line: "preserve_hostname: true"
+    backup: yes
 - name: ensure the hostname of master
   become: yes
   hostname:

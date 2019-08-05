@@ -125,8 +125,19 @@
     src: temg.sh
     dest: "{{ lookup('env', 'HOME') }}/.temg.sh"
   when: inventory_hostname in groups['ln']
-- name: add to crontab
+- name: add cpu temperature to crontab
   cron:
     job: "/bin/bash {{ lookup('env', 'HOME') }}/.temg.sh"
     name: "temperature monitoring"
   become: yes
+- name: copy gpu monitoring script
+  copy:
+    src: gpu.sh
+    dest: "{{ lookup('env', 'HOME') }}/.gpu.sh"
+  when: inventory_hostname in groups['ln']
+- name: add gpu script to crontab
+  become: yes
+  when: inventory_hostname in groups['gn']
+  cron: 
+    job: "/bin/bash {{ lookup('env', 'HOME') }}/.gpu.sh"
+    name: "gpu monitoring"

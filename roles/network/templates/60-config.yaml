@@ -12,3 +12,5 @@ network:
       addresses:
        -  {{ master_ip|indent(1,true) }}/{{ mask }}
       mtu: 9000
+      match:
+        macaddress: {{ ansible_facts[ln_lan_nic]['macaddress'] }}

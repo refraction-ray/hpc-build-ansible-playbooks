@@ -1,0 +1,57 @@
+---
+# tasks file for elastalert
+- name: install some necessary apt packages
+  become: yes
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  when: inventory_hostname in groups['ln']
+  with_items:
+    - supervisor
+    - elastalert
+- name: ensure supervisord is started
+  become: yes
+  service:
+    name: supervisor
+    state: started
+  when: inventory_hostname in groups['ln']
+- name: move elastalert conf to supervisord
+  become: yes
+  copy:
+    src: elastalert.conf
+    dest: /etc/supervisor/conf.d/elastalert.conf
+  when: inventory_hostname in groups['ln']
+  register: supconf
+- name: reload supervisord if conf changed
+  become: yes
+  service:
+    name: supervisor
+    state: reloaded
+  when: inventory_hostname in groups['ln'] and supconf.changed
+- name: create config directory
+  become: yes
+  file:
+    state: directory
+    path: /etc/elastalert
+    mode: '700'
+  when: inventory_hostname in groups['ln']
+- name: copy elastalert configs to etc
+  become: yes
+  copy:
+    src: elastalert/
+    dest: /etc/elastalert/
+  when: inventory_hostname in groups['ln']
+  register: eaconf
+- name: supervisor start elastalert
+  become: yes
+  supervisorctl:
+    name: elastalert
+    state: started
+  when: inventory_hostname in groups['ln']
+- name: restart elastalert if conf changed
+  become: yes
+  supervisorctl:
+    name: elastalert
+    state: restarted
+  when: inventory_hostname in groups['ln'] and eaconf.changed

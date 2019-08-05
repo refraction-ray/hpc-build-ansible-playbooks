@@ -9,3 +9,11 @@ site.retry
 ._README.md
 *.fuse*
 cgrules.conf
+hosts_test
+site_test.yml
+roles/test/
+master.json
+c1.json
+pass.yaml
+site_test.retry
+roles/elastalert/files/elastalert/rules/
