@@ -1,7 +1,8 @@
 ELK
 =========
 
-This role is designed to configure a minimal ELK(elasticsearch+logstash+kibana) stack for logging system.
+This role is designed to configure a minimal ELK (elasticsearch+logstash+kibana+filebeat) stack for logging system. 
+It also enables the user authetication of elastisearch.
 
 Requirements
 ------------
@@ -13,7 +14,7 @@ python3-passlib should be installed to confige http authetication, which is done
 Role Variables
 --------------
 
-See defaults/main.yml. kibana_http_* vars are used for authticating web access.
+See defaults/main.yml. It is worth noting, when running the role at the first time to configure the whole stack, you should run it with filebeat_init as no and as yes each once. After the first run with filebeat_init as no, you can return to command line set es password by `sudo /usr/share/elasticsearch/bin/elasticsearch-setup-passwords interactive`. After this, run the role with filebeat_init as yes to finish the initial configurations. Afterward, you should keep filebeat_init to no, unless you want to reconfigure modules in filebeats.
 
 Templates and Files
 --------------
@@ -21,10 +22,8 @@ Templates and Files
 Notes
 --------------
 
-After finishing the role, you should further input the following two lines of command on master node to enable index template in ES and dashboard in kibana.
+The initial configuration is in general referenced on [this post](https://www.digitalocean.com/community/tutorials/how-to-install-elasticsearch-logstash-and-kibana-elastic-stack-on-ubuntu-18-04#step-3-%E2%80%94-installing-and-configuring-logstash) with generalization to multiple distributed filebeats.
 
-`sudo filebeat setup --template -E output.logstash.enabled=false -E 'output.elasticsearch.hosts=["localhost:9200"]'`
+We further add multiple features from the minimal infrastructure: user authetication, multiple modules from filebeat, correct timestamps and no filters in logstash.
 
-`sudo filebeat setup -e -E output.logstash.enabled=false -E output.elasticsearch.hosts=['localhost:9200'] -E setup.kibana.host=localhost:5601`
-
-The configuration is in general referenced on [this post](https://www.digitalocean.com/community/tutorials/how-to-install-elasticsearch-logstash-and-kibana-elastic-stack-on-ubuntu-18-04#step-3-%E2%80%94-installing-and-configuring-logstash) with slight generalization to multiple distributed filebeats.
+Also note nginx http authentication might be conflict with kibana intrinsic ones, so don't set http auth twice.

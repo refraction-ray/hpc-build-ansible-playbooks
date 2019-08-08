@@ -6,8 +6,8 @@
     state: present
   become: yes
   with_items:
-    - slurm-wlm
-    - libpam-slurm
+    - slurm-wlm=17.11.2-1build1
+    - libpam-slurm=17.11.2-1build1
 - name: copy munge key from ln nodes
   copy:
     backup: yes
@@ -104,7 +104,7 @@
     state: present
     update_cache: yes
   with_items:
-    - slurmdbd
+    - slurmdbd=17.11.2-1build1
     - mysql-server
     - python-mysqldb
     - libmysqlclient-dev

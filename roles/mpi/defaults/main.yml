@@ -1,7 +1,7 @@
 ---
 # defaults file for mpi
 mpi_packages:
-  - libopenmpi-dev
-  - openmpi-bin
+  - libopenmpi-dev=2.1.1-8
+  - openmpi-bin=2.1.1-8
   - g++
  # - libboost-all-dev

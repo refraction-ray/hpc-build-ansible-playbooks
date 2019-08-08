@@ -1,17 +1,17 @@
 ---
 # defaults file for elk
-kibana_http_user: admin
-kibana_http_pass: 123456reallybad
-kibana_port: 8080
+kibana_web_port: 8080
+kb_port: 5601
+kb_user: "kibana"
+kb_pass: "654321alsobad"
+es_user: "elastic"
+es_pass: "654321alsobad"
+filebeat_init: no
 filebeat_ln_modules:
   - system
   - nginx
   - apache2
   - mysql
-  - elasticsearch
-  - kibana
-  - logstash
   - iptables
 filebeat_cn_modules:
   - system
-  - iptables

@@ -7,10 +7,10 @@
     state: present
   when: inventory_hostname in groups['ln']
   with_items:
-    - ganglia-monitor
+    - ganglia-monitor=3.6.0-7ubuntu2
     - ganglia-webfrontend
     - gmetad
-    - ganglia-monitor-python
+    - ganglia-monitor-python=3.6.0-7ubuntu2
     - lm-sensors
 - name: install package for ganglia on cn nodes
   become: yes
@@ -18,8 +18,8 @@
     name: "{{ item }}"
     state: present
   with_items:
-    - ganglia-monitor
-    - ganglia-monitor-python
+    - ganglia-monitor=3.6.0-7ubuntu2
+    - ganglia-monitor-python=3.6.0-7ubuntu2
     - lm-sensors
   when: inventory_hostname in groups['cn']
 - name: config gmond in cn nodes
@@ -139,5 +139,17 @@
   become: yes
   when: inventory_hostname in groups['gn']
   cron: 
+    minute: "*/2"
     job: "/bin/bash {{ lookup('env', 'HOME') }}/.gpu.sh"
     name: "gpu monitoring"
+- name: copy avail monitoring script
+  template:
+    src: avail-monitor.sh
+    dest: "{{ lookup('env', 'HOME') }}/.avail-monitor.sh"
+  when: inventory_hostname in groups['ln']
+- name: add avail script to crontab on all nodes
+  become: yes
+  cron:
+    minute: "*/3"
+    job: "/bin/bash {{ lookup('env', 'HOME') }}/.avail-monitor.sh"
+    name: "avail monitoring"

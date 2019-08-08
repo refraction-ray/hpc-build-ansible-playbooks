@@ -43,6 +43,13 @@
     dest: /etc/elastalert/
   when: inventory_hostname in groups['ln']
   register: eaconf
+- name: render main config to etc
+  become: yes
+  template:
+    src: config.yaml
+    dest: /etc/elastalert/config.yaml
+  when: inventory_hostname in groups['ln']
+  register: eaconf2
 - name: supervisor start elastalert
   become: yes
   supervisorctl:
@@ -54,4 +61,4 @@
   supervisorctl:
     name: elastalert
     state: restarted
-  when: inventory_hostname in groups['ln'] and eaconf.changed
+  when: inventory_hostname in groups['ln'] and (eaconf.changed or eaconf2.changed)

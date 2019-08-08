@@ -7,7 +7,7 @@ Requirements
 ------------
 
 You must run `elk` role first to set up the ELK stack with elasticsearch database.
-
+Also, you should setup index on elasticsearch by `elastalert-create-index`.
 
 Templates and Files
 --------------

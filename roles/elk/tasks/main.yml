@@ -18,7 +18,7 @@
 - name: install elastic
   become: yes
   apt:
-    name: elasticsearch
+    name: elasticsearch=6.8.0
     state: present
   when: inventory_hostname in groups['ln']
 - name: elastic config
@@ -48,10 +48,18 @@
 - name: install kibana
   become: yes
   apt:
-    name: kibana
+    name: kibana=6.8.0
     state: present
   when: inventory_hostname in groups['ln']
-  register: kibanains
+- name: configure kibana
+  become: yes
+  template:
+    src: kibana.yml
+    dest: /etc/kibana/kibana.yml
+    mode: 0600
+    owner: kibana
+  when: inventory_hostname in groups['ln']
+  register: kbconf
 - name: ensure kibana is started
   become: yes
   service:
@@ -65,7 +73,7 @@
     name: kibana
     state: restarted
     enabled: yes
-  when: inventory_hostname in groups['ln'] and kibanains.changed
+  when: inventory_hostname in groups['ln'] and kbconf.changed
 - name: install nginx
   become: yes
   apt:
@@ -79,16 +87,6 @@
     state: absent
   when: inventory_hostname in groups['ln']
   register: rmdefault
-- name: add kibana http password
-  become: yes
-  htpasswd:
-    path: /etc/nginx/.htpasswd
-    name: "{{ kibana_http_user }}"
-    password: "{{ kibana_http_pass }}"
-    owner: root
-    mode: 0644
-  when: inventory_hostname in groups['ln']
-  register: nginxpass
 - name: nginx kibana server set
   template:
     src: kibana.conf
@@ -109,25 +107,26 @@
     name: nginx
     state: restarted
     enabled: yes
-  when: inventory_hostname in groups['ln'] and (rmdefault.changed or nginxpass.changed or kibanaserver.changed)
+  when: inventory_hostname in groups['ln'] and (rmdefault.changed or kibanaserver.changed)
 - name: install logstash
   become: yes
   apt:
-    name: logstash
+    name: logstash=1:6.8.0-1
     state: present
   when: inventory_hostname in groups['ln']
 - name: config logstash
   template:
     src: "{{ item }}"
     dest: "/etc/logstash/conf.d/{{ item }}"
+    owner: logstash
+    mode: 0600
   become: yes
   when: inventory_hostname in groups['ln']
   register: logstashconf
   with_items:
     - "02-beats-input.conf"
-    - "10-syslog-filter.conf"
     - "30-elasticsearch-output.conf"
-- name: ensure lgostash is started
+- name: ensure logstash is started
   service:
     name: logstash
     state: started
@@ -143,7 +142,7 @@
 - name: install filebeat
   become: yes
   apt: 
-    name: filebeat
+    name: filebeat=6.8.0
     state: present
 - name: config filebeat
   become: yes
@@ -153,17 +152,50 @@
     owner: root
     mode: 0600
   register: filebeatconf
+- name: filebeat modules file
+  become: yes
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/filebeat/modules.d/{{ item }}"
+  with_items:
+    - nginx.yml
+    - system.yml
+  when: inventory_hostname in groups['ln']
+- name: filebeat modules file on cns
+  become: yes
+  copy:
+    src: "{{ item }}"
+    dest: "/etc/filebeat/modules.d/{{ item }}"
+  with_items:
+    - system.yml
+  when: inventory_hostname in groups['cn']
 - name: ensure fb is started
   become: yes
   service:
     name: filebeat
     state: started
+- name: restart filebeat
+  become: yes
+  service:
+    name: filebeat
+    state: restarted  
+  when:  filebeatconf.changed
+## the following tasks is used for initialization of fb
+- name: stop filebeat for init
+  become: yes
+  service:
+    name: filebeat
+    state: stopped
+  when: filebeat_init
+- name: delete all exisiting pipelines
+  shell: "unset http_proxy&&curl -XDELETE -u {{ es_user }}:{{ es_pass }} 'http://localhost:9200/_ingest/pipeline/filebeat*'"
+  when: inventory_hostname in groups['ln'] and filebeat_init
 - name: enable filebeat module in login node
   become: yes
   command: "filebeat modules enable {{item}}"
   with_items:
      "{{ filebeat_ln_modules }}"
-  when: inventory_hostname in groups['ln']
+  when: inventory_hostname in groups['ln'] and filebeat_init
   register: r
   changed_when: r.stdout.startswith("Enable")
 - name: enable filebeat module in compute nodes
@@ -171,12 +203,20 @@
   command: "filebeat modules enable {{item}}"
   with_items:
      "{{ filebeat_cn_modules }}"
-  when: inventory_hostname in groups['ln']
+  when: inventory_hostname in groups['cn'] and filebeat_init
   register: rcn
-  changed_when: rcn.stdout.startswith("Enable")
-- name: restart filebeat
+  changed_when: rcn.stdout.startswith("Enable") 
+- name: filebeat setup init
+  become: yes
+  command: "filebeat setup -e -E output.logstash.enabled=false -E output.elasticsearch.hosts=['localhost:9200'] -E output.elasticsearch.username={{ es_user }} -E output.elasticsearch.password={{ es_pass }}"
+  when: inventory_hostname in groups['ln'] and filebeat_init
+- name: filebeat add pipelines into ES
+  become: yes
+  command: "filebeat setup --pipelines --modules {{ filebeat_ln_modules|join(',') }}  -E output.logstash.enabled=false -E output.elasticsearch.hosts=['localhost:9200'] -E output.elasticsearch.username={{ es_user }} -E output.elasticsearch.password={{ es_pass }} -M system.auth.var.convert_timezone=true -M system.syslog.var.convert_timezone=true -M nginx.error.var.convert_timezone=true"
+  when: inventory_hostname in groups['ln'] and filebeat_init
+- name: start filebeat again
   become: yes
   service:
     name: filebeat
-    state: restarted  
-  when:  r.changed or filebeatconf.changed or rcn.changed
+    state: started
+  when: filebeat_init

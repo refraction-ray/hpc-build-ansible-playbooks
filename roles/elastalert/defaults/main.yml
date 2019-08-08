@@ -1,2 +1,4 @@
 ---
 # defaults file for elastalert
+es_user: elastic
+es_pass: 123456notgood
