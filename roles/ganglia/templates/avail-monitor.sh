@@ -55,3 +55,11 @@ if [ "$hostname" == "{{ master_name}}" ]; then
        logger -t $tag "available memory is draining on master!"
    fi
 fi
+
+## check nics
+if [ "$hostname" == "{{ master_name }}" ]; then
+    nonic=$(/sbin/ifconfig|grep flags|wc -l)
+    if [ $nonic -ne {{ master_nic_no }} ]; then
+        logger -t $tag "nics seem to be missing on master!"
+    fi
+fi

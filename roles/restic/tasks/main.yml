@@ -1,0 +1,41 @@
+---
+# tasks file for restic
+- name: install restic by apt
+  apt:
+    name: restic
+    state: present
+  when: inventory_hostname in groups['ln']
+- name: init repos
+  environment:
+    RESTIC_REPOSITORY: "{{ item.path }}"
+    RESTIC_PASSWORD: "{{ item.pass }}"
+  register: re_init
+  command: "/usr/bin/restic init"
+  changed_when: "'created restic backend' in re_init.stdout"
+  failed_when: re_init.rc != 0 and not 'config file already exists' in re_init.stderr
+  with_items: "{{ restic_repos }}"
+  when: item.init and inventory_hostname in groups['ln']
+- name: copy ignore files if any
+  become: yes
+  copy:
+    src: ignorefile
+    dest: /BACKUP/ignorefile
+  when: inventory_hostname in groups['ln'] and ignorefile
+- name: add crontabs for backup
+  become: yes
+  cron:
+    minute: "{{ item.minute }}"
+    hour: "{{ item.hour }}"
+    name: "backup {{ item.path }}"
+    job: "RESTIC_REPOSITORY='{{ item.repo|default(default_repo) }}' RESTIC_PASSWORD='{{ item.pass|default(default_pass) }}' /usr/bin/restic backup {{ item.path }} {{ item.extras | default('') }}"
+  with_items: "{{ backup_dirs }}"
+  when: inventory_hostname in groups['ln']
+- name: prune crontab
+  become: yes
+  cron:
+    minute: "10"
+    hour: "7"
+    name: "prune backups {{ item.path }}"
+    job: "RESTIC_REPOSITORY='{{ item.path }}' RESTIC_PASSWORD='{{ item.pass }}' /usr/bin/restic forget --keep-last 1 --keep-daily 7 --keep-weekly 4 --keep-monthly 3 --prune"
+  with_items: "{{ restic_repos }}"
+  when: inventory_hostname in groups['ln']

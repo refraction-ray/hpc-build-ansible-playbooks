@@ -1,0 +1,11 @@
+/tmp/*
+/dev/*
+/DATA*
+/BACKUP
+/run/*
+/proc/*
+/swap.img
+/lost+found/*
+/mnt/*
+/home/*
+/opt/*

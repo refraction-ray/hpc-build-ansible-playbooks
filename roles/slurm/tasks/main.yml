@@ -71,31 +71,6 @@
     dest: /etc/security/access.conf
     backup: yes
   when: inventory_hostname in groups['cn']
-- name: ensure slurmctld is started
-  become: yes
-  service:
-    name: slurmctld
-    state: started
-  when: inventory_hostname in groups['ln']
-- name: start slurmctld
-  become: yes
-  service:
-    name: slurmctld
-    state: restarted
-  when: inventory_hostname in groups['ln'] and (lnslurm.changed or lncgroup.changed)
-- name: ensure slurmd is started
-  become: yes
-  service:
-    name: slurmd
-    enabled: yes
-    state: started
-  when: inventory_hostname in groups['cn']
-- name: restart slurmd
-  become: yes
-  service:
-    name: slurmd
-    state: restarted
-  when: (lnslurm.changed or lncgroup.changed) and inventory_hostname in groups['cn']
 - name: install slurmdbd on master
   become: yes
   when: inventory_hostname in groups['ln']
@@ -155,3 +130,34 @@
   service:
     name: slurmdbd
     state: restarted
+- name: add cluster to database
+  command: "sacctmgr add cluster {{cluster_name}} -i"
+  when: inventory_hostname in groups['ln']
+  failed_when: clusterr.rc != 1 and clusterr.rc != 0
+  changed_when: not clusterr.stdout.startswith("This cluster")
+  register: clusterr
+- name: ensure slurmctld is started # slurmctld must be started after slurmdbd
+  become: yes
+  service:
+    name: slurmctld
+    state: started
+  when: inventory_hostname in groups['ln']
+- name: start slurmctld
+  become: yes
+  service:
+    name: slurmctld
+    state: restarted
+  when: inventory_hostname in groups['ln'] and (lnslurm.changed or lncgroup.changed)
+- name: ensure slurmd is started
+  become: yes
+  service:
+    name: slurmd
+    enabled: yes
+    state: started
+  when: inventory_hostname in groups['cn']
+- name: restart slurmd
+  become: yes
+  service:
+    name: slurmd
+    state: restarted
+  when: (lnslurm.changed or lncgroup.changed) and inventory_hostname in groups['cn']

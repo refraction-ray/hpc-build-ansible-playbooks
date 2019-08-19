@@ -1,0 +1,13 @@
+---
+# defaults file for restic
+restic_repos:
+  - path: "/BACKUP"
+    pass: "123456notwell"
+    init: True
+default_repo: "/BACKUP"
+default_pass: "123456notwell"
+backup_dirs:
+  - path: "/home"
+    hour: "3"
+    minute: "0"
+ignorefile: yes

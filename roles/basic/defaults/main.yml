@@ -1,9 +1,15 @@
 ---
 # defaults file for basic
 nfs_dir:
-  - "/home"
-  - "/opt"
-  - "/DATA"
+  - dir: "/home"
+    host: "master"
+    mnt: "/home"
+  - dir: "/opt"
+    host: "master"
+    mnt: "/opt"
+  - dir: "/DATA"
+    host: "master"
+    mnt: "/DATA"
 aptpacks:
   - tree
   - nfs-common
@@ -15,7 +21,3 @@ aptpacks:
   - unzip
   - openjdk-8-jdk
   - pandoc
-extra_mounts_bool: no
-extra_mounts:
-  - name: /SCRATCH
-    src: d1:/SCRATCH

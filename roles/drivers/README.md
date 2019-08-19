@@ -11,4 +11,6 @@ See defaults/main.yml. One should sepcify the driver versions, and it can be don
 Notes
 --------------
 
+Before running this role, you mat need to run `sudo apt-get purge nvidia*` on [gn] to ensure the preinstalled drivers deleted.
+
 After the installation of GPU drivers, a reboot is necessary. The reboot thing is not controlled by the role, so reboot the machines by hand.

@@ -7,4 +7,5 @@ ganglia_http_pass: 123456notgood
 num_nfs_cn: 3
 num_ext_ln: 3
 disk_warning: 350
+master_nic_no: 5 
 memory_avail_warning: 5000000
