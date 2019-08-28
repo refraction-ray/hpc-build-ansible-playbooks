@@ -153,3 +153,8 @@
     minute: "*/3"
     job: "/bin/bash {{ lookup('env', 'HOME') }}/.avail-monitor.sh"
     name: "avail monitoring"
+- name: no mail from crontab
+  become: yes
+  cronvar:
+    name: "MAILTO"
+    value: '""'

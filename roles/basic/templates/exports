@@ -9,5 +9,7 @@
 # /srv/nfs4/homes  gss/krb5i(rw,sync,no_subtree_check)
 #
 {% for d in nfs_dir %}
+{% if d.host == inventory_hostname %}
 {{ d.dir }} {{ ip_range }}/{{ mask }}(rw,sync,no_root_squash)
+{% endif %}
 {% endfor %}

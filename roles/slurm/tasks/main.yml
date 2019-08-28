@@ -15,7 +15,7 @@
     dest: "{{role_path}}/files/munge.key"
     remote_src: yes
   become: yes
-  when: inventory_hostname in groups['ln']
+  when: inventory_hostname == master_name
 - name: copy munge key to cn nodes
   copy:
     backup: yes
@@ -45,6 +45,13 @@
     dest: /etc/slurm-llnl/slurm.conf
     backup: yes
   register: lnslurm
+- name: config gres
+  become: yes
+  template:
+    src: gres.conf
+    dest: /etc/slurm-llnl/gres.conf
+    backup: yes
+  register: lngres
 - name: config cgroup
   become: yes
   copy:
@@ -52,6 +59,13 @@
     dest: /etc/slurm-llnl/cgroup.conf
     backup: yes
   register: lncgroup
+- name: add smail program for mail sending
+  template:
+    src: smail.sh
+    dest: /usr/bin/smail.sh
+    owner: "{{ slurm_user }}"
+    mode: 0700
+  become: yes
 - name: add pam module in pamd/sshd
   become: yes
   copy:
@@ -73,7 +87,7 @@
   when: inventory_hostname in groups['cn']
 - name: install slurmdbd on master
   become: yes
-  when: inventory_hostname in groups['ln']
+  when: inventory_hostname == dbdhost
   apt:
     name: "{{ item }}"
     state: present
@@ -87,13 +101,13 @@
   register: lnslurmdbd
 - name: ensure mysql is running
   become: yes
-  when: inventory_hostname in groups['ln'] and lnslurmdbd.changed
+  when: inventory_hostname == dbdhost
   service:
     name: mysql
     state: started
 - name: create mysql user
   become: yes
-  when: inventory_hostname in groups['ln']
+  when: inventory_hostname == dbdhost
   mysql_user:
     login_host: localhost
     login_user: root
@@ -106,13 +120,13 @@
   register: mysqluser
 - name: restart mysql
   become: yes
-  when: inventory_hostname in groups['ln'] and mysqluser.changed
+  when: inventory_hostname == dbdhost and mysqluser.changed
   service:
     name: mysql
     state: restarted
 - name: config file for slurmdbd
   become: yes
-  when: inventory_hostname in groups['ln']
+  when: inventory_hostname == dbdhost
   template:
     src: slurmdbd.conf
     dest: /etc/slurm-llnl/slurmdbd.conf
@@ -123,16 +137,16 @@
   service: 
     name: slurmdbd
     state: started
-  when: inventory_hostname in groups['ln']
+  when: inventory_hostname == dbdhost
 - name: restart slurmdbd
   become: yes
-  when: inventory_hostname in groups['ln'] and slurmdbdconf.changed
+  when: inventory_hostname == dbdhost and slurmdbdconf.changed
   service:
     name: slurmdbd
     state: restarted
 - name: add cluster to database
   command: "sacctmgr add cluster {{cluster_name}} -i"
-  when: inventory_hostname in groups['ln']
+  when: inventory_hostname == dbdhost
   failed_when: clusterr.rc != 1 and clusterr.rc != 0
   changed_when: not clusterr.stdout.startswith("This cluster")
   register: clusterr
@@ -141,13 +155,13 @@
   service:
     name: slurmctld
     state: started
-  when: inventory_hostname in groups['ln']
+  when: inventory_hostname in ctldhost
 - name: start slurmctld
   become: yes
   service:
     name: slurmctld
     state: restarted
-  when: inventory_hostname in groups['ln'] and (lnslurm.changed or lncgroup.changed)
+  when: inventory_hostname in ctldhost and (lnslurm.changed or lncgroup.changed or lngres.changed)
 - name: ensure slurmd is started
   become: yes
   service:
@@ -160,4 +174,4 @@
   service:
     name: slurmd
     state: restarted
-  when: (lnslurm.changed or lncgroup.changed) and inventory_hostname in groups['cn']
+  when: (lnslurm.changed or lncgroup.changed or lngres.changed) and inventory_hostname in groups['cn']

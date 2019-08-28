@@ -14,6 +14,7 @@ site_test.yml
 roles/test/
 master.json
 c1.json
+c4.json
 pass.yaml
 site_test.retry
 roles/elastalert/files/elastalert/rules/

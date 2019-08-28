@@ -62,7 +62,7 @@
   apt:
     name: nfs-kernel-server
     state: present
-  when: inventory_hostname in groups['ln']
+  when: inventory_hostname in groups['sn']
 - name: update nfs config file on ln node
   become: yes
   template:
@@ -71,19 +71,28 @@
     backup: yes
     owner: root
   register: lnnfs
-  when: inventory_hostname in groups['ln']
+  when: inventory_hostname in groups['sn']
 - name: ensure nfs service start on ln node
   become: yes
   service:
     name: nfs-kernel-server
     state: started
-  when: inventory_hostname in groups['ln']
+  when: inventory_hostname in groups['sn']
 - name: restart nfs service
   become: yes
   service:
     name: nfs-kernel-server
     state: restarted
-  when: lnnfs.changed and inventory_hostname in groups['ln']
+  when: lnnfs.changed and inventory_hostname in groups['sn']
+- name: mount localdisk
+  become: yes
+  mount:
+    path: "{{ item.mnt }}"
+    src: "{{ item.dev }}"
+    fstype: ext4
+    state: mounted
+  when: inventory_hostname == item.host
+  with_items: "{{ local_disk }}"
 - name: make sure the mount dir exist in cn nodes
   when: inventory_hostname != item.host
   become: yes
@@ -125,3 +134,22 @@
     mode: '0644'
     state: directory
     recurse: yes
+- name: postfix config
+  become: yes
+  template:
+    src: main.cf
+    dest: /etc/postfix/main.cf
+    backup: yes
+  register: postconf
+- name: ensure postfix running
+  service:
+    name: postfix
+    state: started
+    enabled: yes
+  become: yes
+- name: reload postfix
+  service:
+    name: postfix
+    state: reloaded
+  become: yes
+  when: postconf.changed

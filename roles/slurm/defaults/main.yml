@@ -3,3 +3,8 @@
 db_user: slurm
 slurm_user: slurm
 db_pass: 123456notgood
+ctldhost: 
+  - master
+  - c8
+dbdhost: master
+slurm_mail: slurm@localhost.domain

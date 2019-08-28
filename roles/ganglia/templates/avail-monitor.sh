@@ -26,6 +26,11 @@ if [ "$hostname" == "{{ master_name}}" ]; then
     if [ $extnum -ne {{ num_ext_ln }} ]; then
         logger -t $tag "ext4 mount is missing"
     fi
+elif [ "$hostname" == "c8" ]; then
+   nfsnum=$(df -T|grep nfs4|wc -l)
+   if [ $nfsnum -ne 3 ]; then
+       logger -t $tag "nfs4 mount is missing"
+   fi
 else
     nfsnum=$(df -T|grep nfs4|wc -l)
     if [ $nfsnum -ne {{ num_nfs_cn }} ]; then
@@ -62,4 +67,10 @@ if [ "$hostname" == "{{ master_name }}" ]; then
     if [ $nonic -ne {{ master_nic_no }} ]; then
         logger -t $tag "nics seem to be missing on master!"
     fi
+fi
+
+## check zombie processes
+nozo=$(ps axo pid=,stat=|grep Z|wc -l)
+if [ $nozo -gt 1 ]; then
+    logger -t $tag "there are several zombie processes! on ${hostname}"
 fi

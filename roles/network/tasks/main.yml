@@ -65,6 +65,7 @@
     src: map.hosts
     dest: /etc/dnsmasq.d/map.hosts
   when: inventory_hostname in groups['ln']
+  register: maphost
 - name: ensure dnsmasq service is started
   become: yes
   service:
@@ -76,7 +77,7 @@
   service:
     name: dnsmasq
     state: restarted
-  when: inventory_hostname in groups['ln'] and lndnsmasq.changed  
+  when: inventory_hostname in groups['ln'] and (lndnsmasq.changed or maphost.changed)  
 - name: enable ip forward on ln nodes
   become: yes
   lineinfile:
@@ -167,5 +168,5 @@
   when: inventory_hostname in groups['ln']
 - name: enable jumbo frame on cn
   become: yes
-  command: "ip link set {{ ansible_facts['default_ipv4']['interface'] }} mtu 9000"
+  command: "ip link set eno1 mtu 9000"
   when: inventory_hostname in groups['cn']

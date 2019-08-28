@@ -7,6 +7,7 @@
     state: present
 - name: add nvidia repo
   become: yes
+  environment: "{{ env_vars }}"
   apt_repository:
     repo: "ppa:graphics-drivers/ppa"
     state: present

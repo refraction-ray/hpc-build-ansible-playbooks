@@ -14,6 +14,7 @@ modules:
         environment_blacklist: ['PS1']
       environment:
         set:
+          CPATH: "/opt/intel/compilers_and_libraries_2019.4.243/linux/ipp/include:/opt/intel/compilers_and_libraries_2019.4.243/linux/mkl/include:/opt/intel/compilers_and_libraries_2019.4.243/linux/pstl/include:/opt/intel/compilers_and_libraries_2019.4.243/linux/tbb/include:/opt/intel/compilers_and_libraries_2019.4.243/linux/daal/include:/opt/intel/include:/opt/intel/compilers_and_libraries_2019.4.243/linux/mpi/intel64/include"
           FI_PROVIDER_PATH: "/opt/intel/compilers_and_libraries_2019.4.243/linux/mpi/intel64/libfabric/lib/prov"
           FI_PROVIDER: sockets
         prepend_path:

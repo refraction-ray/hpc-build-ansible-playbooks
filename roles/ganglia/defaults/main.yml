@@ -4,7 +4,7 @@ ganglia_url: ganglia
 ganglia_http_user: admin
 ganglia_http_pass: 123456notgood
 # the following one is used to configure the general avail monitoring scripts
-num_nfs_cn: 3
+num_nfs_cn: 4
 num_ext_ln: 3
 disk_warning: 350
 master_nic_no: 5 
