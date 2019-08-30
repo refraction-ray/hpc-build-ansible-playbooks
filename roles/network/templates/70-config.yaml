@@ -5,4 +5,4 @@ network:
     eno1:
       dhcp4: yes
       gateway4: {{ master_ip }}
-      mtu: 9000
+      mtu: {{ mtu }}

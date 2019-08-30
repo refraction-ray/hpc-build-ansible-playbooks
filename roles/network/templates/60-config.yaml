@@ -6,11 +6,13 @@ network:
       addresses:
       - {{ wan_ip|indent(1,true) }}/{{ wan_mask }}
       gateway4: {{ wan_gateway }}
+      dhcp4: false
       nameservers:
         addresses: {{ dns_server|to_yaml }}
     {{ ln_lan_nic }}:
       addresses:
        -  {{ master_ip|indent(1,true) }}/{{ mask }}
-      mtu: 9000
+      mtu: {{ mtu }}
+      dhcp4: false
       match:
         macaddress: {{ ansible_facts[ln_lan_nic]['macaddress'] }}

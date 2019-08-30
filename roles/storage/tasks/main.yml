@@ -1,0 +1,70 @@
+---
+# tasks file for storage
+- name: install nfs server on sn node
+  become: yes
+  apt:
+    name: nfs-kernel-server=1:1.3.4-2.1ubuntu5.2
+    state: present
+  when: inventory_hostname in groups['sn']
+- name: install nfs client on all nodes
+  become: yes
+  apt:
+    name: nfs-common=1:1.3.4-2.1ubuntu5.2
+    state: present
+- name: update nfs config file on ln node
+  become: yes
+  template:
+    src: ../templates/exports
+    dest: /etc/exports
+    backup: yes
+    owner: root
+  register: lnnfs
+  when: inventory_hostname in groups['sn']
+- name: ensure nfs service start on ln node
+  become: yes
+  service:
+    name: nfs-kernel-server
+    state: started
+  when: inventory_hostname in groups['sn']
+- name: restart nfs service
+  become: yes
+  service:
+    name: nfs-kernel-server
+    state: restarted
+  when: lnnfs.changed and inventory_hostname in groups['sn']
+- name: mount localdisk
+  become: yes
+  mount:
+    path: "{{ item.mnt }}"
+    src: "{{ item.dev }}"
+    fstype: ext4
+    state: mounted
+  when: inventory_hostname == item.host
+  with_items: "{{ local_disk }}"
+- name: make sure the mount dir exist in cn nodes
+  when: inventory_hostname != item.host
+  become: yes
+  file:
+    path: "{{ item.mnt }}"
+    state: directory
+  with_items: "{{ nfs_dir }}"
+- name: mount dir on all other nodes
+  become: yes
+  mount:
+    name: "{{ item.mnt }}"
+    src: "{{ item.host }}:{{ item.dir }}"
+    fstype: nfs
+    state: mounted
+  when: inventory_hostname != item.host
+  with_items: "{{ nfs_dir }}"
+- name: install tmpreaper on all nodes
+  become: yes
+  apt:
+    name: tmpreaper
+    state: present
+- name: change the config of tmpreaper
+  template:
+    src: tmpreaper.conf
+    dest: /etc/tmpreaper.conf
+    backup: yes
+  become: yes

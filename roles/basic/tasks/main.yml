@@ -45,10 +45,9 @@
   when: inventory_hostname in groups['ln'] and lnntp.changed
 - name: update ntp config file on cn nodes
   become: yes
-  lineinfile:
-    path: /etc/ntp.conf
-    regexp: "^server .*$"
-    line: "server {{ master_name }}  prefer"
+  template:
+    src: ntp-cn.conf
+    dest: /etc/ntp.conf
   register: ntpconfig
   when: inventory_hostname in groups['cn']
 - name: restart ntp service on cn nodes
@@ -57,58 +56,6 @@
     name: ntp
     state: restarted
   when: inventory_hostname in groups['cn'] and ntpconfig.changed
-- name: install nfs server on ln node
-  become: yes
-  apt:
-    name: nfs-kernel-server
-    state: present
-  when: inventory_hostname in groups['sn']
-- name: update nfs config file on ln node
-  become: yes
-  template:
-    src: ../templates/exports
-    dest: /etc/exports
-    backup: yes
-    owner: root
-  register: lnnfs
-  when: inventory_hostname in groups['sn']
-- name: ensure nfs service start on ln node
-  become: yes
-  service:
-    name: nfs-kernel-server
-    state: started
-  when: inventory_hostname in groups['sn']
-- name: restart nfs service
-  become: yes
-  service:
-    name: nfs-kernel-server
-    state: restarted
-  when: lnnfs.changed and inventory_hostname in groups['sn']
-- name: mount localdisk
-  become: yes
-  mount:
-    path: "{{ item.mnt }}"
-    src: "{{ item.dev }}"
-    fstype: ext4
-    state: mounted
-  when: inventory_hostname == item.host
-  with_items: "{{ local_disk }}"
-- name: make sure the mount dir exist in cn nodes
-  when: inventory_hostname != item.host
-  become: yes
-  file:
-    path: "{{ item.mnt }}"
-    state: directory
-  with_items: "{{ nfs_dir }}"
-- name: mount dir on all other nodes
-  become: yes
-  mount:
-    name: "{{ item.mnt }}"
-    src: "{{ item.host }}:{{ item.dir }}"
-    fstype: nfs
-    state: mounted
-  when: inventory_hostname != item.host
-  with_items: "{{ nfs_dir }}"
 - name: update ssh config in all nodes
   become: yes
   copy:

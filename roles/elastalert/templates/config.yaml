@@ -5,7 +5,7 @@ rules_folder: "/etc/elastalert/rules"
 # How often ElastAlert will query Elasticsearch
 # The unit can be anything from weeks to seconds
 run_every:
-  minutes: 3
+  minutes: 10
 
 # ElastAlert will buffer results from the most recent
 # period of time, in case some log sources are not in real time

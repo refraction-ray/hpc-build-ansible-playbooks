@@ -3,3 +3,4 @@
 set_proxy: yes
 use_tinc: no
 tinc_if: tinc
+mtu: 8500 # reason for non 9000: see https://www.intel.com/content/www/us/en/design/products-and-solutions/networking-and-io/ethernet-connection-i218/technical-library.html?grouping=rdc%20Content%20Types&sort=title:asc specification update: point 3.

@@ -164,9 +164,9 @@
   when: set_proxy
 - name: enable jumbo frame on ln
   become: yes
-  command: "ip link set {{ ln_lan_nic }} mtu 9000"
+  command: "ip link set {{ ln_lan_nic }} mtu {{ mtu }}"
   when: inventory_hostname in groups['ln']
 - name: enable jumbo frame on cn
   become: yes
-  command: "ip link set eno1 mtu 9000"
+  command: "ip link set eno1 mtu {{ mtu }}"
   when: inventory_hostname in groups['cn']

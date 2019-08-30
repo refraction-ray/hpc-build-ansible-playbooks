@@ -90,6 +90,13 @@
     dest: /etc/apache2/sites-enabled/ganglia.conf
   when: inventory_hostname in groups['ln']
   register: gweb
+- name: patch on ganglia webfront cluster view
+  lineinfile:
+    path: /usr/share/ganglia-webfrontend/cluster_view.php
+    regexp: "context_metrics ="
+    line: "  $context_metrics = array();"
+  become: yes
+  when: inventory_hostname in groups['ln']
 - name: install passlib for password protection on apache
   become: yes
   apt:

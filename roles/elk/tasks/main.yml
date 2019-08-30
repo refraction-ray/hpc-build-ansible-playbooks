@@ -160,6 +160,7 @@
   with_items:
     - nginx.yml
     - system.yml
+    - apache2.yml
   when: inventory_hostname in groups['ln']
 - name: filebeat modules file on cns
   become: yes
@@ -187,6 +188,12 @@
     name: filebeat
     state: stopped
   when: filebeat_init
+- name: hack apache2 error pipelines enabling it supporting timezone convert
+  become: yes
+  when: inventory_hostname in groups['ln'] and filebeat_init
+  copy:
+    dest: '/usr/share/filebeat/module/apache2/error/ingest/pipeline.json'
+    src: 'apache2_pipeline.json'
 - name: delete all exisiting pipelines
   shell: "unset http_proxy&&curl -XDELETE -u {{ es_user }}:{{ es_pass }} 'http://localhost:9200/_ingest/pipeline/filebeat*'"
   when: inventory_hostname in groups['ln'] and filebeat_init
@@ -212,7 +219,7 @@
   when: inventory_hostname in groups['ln'] and filebeat_init
 - name: filebeat add pipelines into ES
   become: yes
-  command: "filebeat setup --pipelines --modules {{ filebeat_ln_modules|join(',') }}  -E output.logstash.enabled=false -E output.elasticsearch.hosts=['localhost:9200'] -E output.elasticsearch.username={{ es_user }} -E output.elasticsearch.password={{ es_pass }} -M system.auth.var.convert_timezone=true -M system.syslog.var.convert_timezone=true -M nginx.error.var.convert_timezone=true"
+  command: "filebeat setup --pipelines --modules {{ filebeat_ln_modules|join(',') }}  -E output.logstash.enabled=false -E output.elasticsearch.hosts=['localhost:9200'] -E output.elasticsearch.username={{ es_user }} -E output.elasticsearch.password={{ es_pass }} -M system.auth.var.convert_timezone=true -M system.syslog.var.convert_timezone=true -M nginx.error.var.convert_timezone=true -M apache2.error.var.convert_timezone=true"
   when: inventory_hostname in groups['ln'] and filebeat_init
 - name: start filebeat again
   become: yes

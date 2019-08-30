@@ -4,6 +4,7 @@
   roles:
     # - network
     # - basic
+    # - storage
     # - drivers
     # - slurm
     # - mpi

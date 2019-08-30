@@ -1,0 +1,26 @@
+---
+# defaults file for storage
+nfs_dir:
+  - dir: "/home"
+    host: "master"
+    mnt: "/home"
+  - dir: "/opt"
+    host: "master"
+    mnt: "/opt"
+  - dir: "/DATA"
+    host: "master"
+    mnt: "/DATA"
+  - dir: "/DATA.c8"
+    host: "c8"
+    mnt: "/DATA.c8"
+local_disk:
+  - dev: "/dev/sdb1"
+    host: "master"
+    mnt: "/DATA"
+  - dev: "/dev/sdc1"
+    host: "master"
+    mnt: "/BACKUP"
+  - dev: "/dev/sdb1"
+    host: "c8"
+    mnt: "/DATA.c8"
+tmp_time: "15d"
