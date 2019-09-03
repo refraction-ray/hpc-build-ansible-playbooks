@@ -1,6 +1,9 @@
 ---
 # defaults file for elk
 kibana_web_port: 8080
+es_host:
+  - master
+  - c9
 kb_port: 5601
 kb_user: "kibana"
 kb_pass: "654321alsobad"

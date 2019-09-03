@@ -88,15 +88,31 @@
     dest: /etc/postfix/main.cf
     backup: yes
   register: postconf
+- name: postfix alias file
+  copy:
+    src: aliases
+    dest: /etc/aliases
+  become: yes
+  register: alias
 - name: ensure postfix running
   service:
     name: postfix
     state: started
     enabled: yes
   become: yes
+- name: new aliases db
+  become: yes
+  command: "newaliases"
+  when: alias.changed
 - name: reload postfix
   service:
     name: postfix
     state: reloaded
   become: yes
   when: postconf.changed
+- name: stop snapd
+  become: yes
+  service:
+    name: snapd
+    state: stopped
+    enabled: no

@@ -22,6 +22,15 @@
     - ganglia-monitor-python=3.6.0-7ubuntu2
     - lm-sensors
   when: inventory_hostname in groups['cn']
+- name: hack on netstats.py
+  become: yes
+  copy:
+    src: "{{ item }}"
+    dest: "/usr/lib/ganglia/python_modules/{{ item }}"
+  register: pymd
+  with_items:
+    - netstats.py
+    - cpu_stats.py
 - name: config gmond in cn nodes
   become: yes
   template:
@@ -41,7 +50,7 @@
   service:
     name: ganglia-monitor
     state: restarted
-  when: inventory_hostname in groups['cn'] and gmondc.changed
+  when: inventory_hostname in groups['cn'] and (gmondc.changed or pymd.changed)
 - name: config gmond in ln nodes
   become: yes
   template:
@@ -62,7 +71,7 @@
   service:
     name: ganglia-monitor
     state: restarted
-  when: inventory_hostname in groups['ln'] and gmondl.changed
+  when: inventory_hostname in groups['ln'] and (gmondl.changed or pymd.changed)
 - name: config gmetad in ln nodes
   become: yes
   template:

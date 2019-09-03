@@ -18,3 +18,5 @@ c4.json
 pass.yaml
 site_test.retry
 roles/elastalert/files/elastalert/rules/
+elastic-certificates.p12
+elastic-stack-ca.p12

@@ -20,7 +20,7 @@
   apt:
     name: elasticsearch=6.8.0
     state: present
-  when: inventory_hostname in groups['ln']
+  when: inventory_hostname in es_host
 - name: elastic config
   become: yes
   template:
@@ -29,22 +29,50 @@
     owner: root
     group: elasticsearch
     mode: 0640
-  when: inventory_hostname in groups['ln']
+  when: inventory_hostname in es_host
   register: esconf
+- name: ensure cert directory exist
+  become: yes
+  file:
+    path: /etc/elasticsearch/certs
+    state: directory
+  when: inventory_hostname in es_host
+  register: cert
+- name: generate ssl ca
+  when: inventory_hostname == es_host[0] and cert.changed
+  become: yes
+  command: '/usr/share/elasticsearch/bin/elasticsearch-certutil ca --pass "" --out /etc/elasticsearch/certs/elastic-stack-ca.p12'
+- name: generate ssl cert
+  when: inventory_hostname == es_host[0] and cert.changed
+  become: yes
+  command: '/usr/share/elasticsearch/bin/elasticsearch-certutil cert --ca /etc/elasticsearch/certs/elastic-stack-ca.p12 --pass "" --out {{ role_path }}/files/elastic-certificates.p12 --ca-pass ""'
+- name: chown ssl key files
+  become: yes
+  when: inventory_hostname == es_host[0] and cert.changed
+  file:
+    owner: "{{ admin }}"
+    path: "{{ role_path }}/files/elastic-certificates.p12"
+- name: copy ssl key files
+  become: yes
+  copy:
+    src: elastic-certificates.p12 
+    dest: /etc/elasticsearch/certs/elastic-certificates.p12
+  when: inventory_hostname in es_host
+  register: sslconf
 - name: ensure es is started
   become: yes
   service:
     name: elasticsearch
     state: started
     enabled: yes
-  when: inventory_hostname in groups['ln']
-- name: elasticsearch start
+  when: inventory_hostname in es_host
+- name: elasticsearch restart
   become: yes
   service:
     name: elasticsearch
     state: restarted
     enabled: yes
-  when: inventory_hostname in groups['ln'] and esconf.changed
+  when: inventory_hostname in es_host and (esconf.changed or sslconf.changed)
 - name: install kibana
   become: yes
   apt:
@@ -195,7 +223,7 @@
     dest: '/usr/share/filebeat/module/apache2/error/ingest/pipeline.json'
     src: 'apache2_pipeline.json'
 - name: delete all exisiting pipelines
-  shell: "unset http_proxy&&curl -XDELETE -u {{ es_user }}:{{ es_pass }} 'http://localhost:9200/_ingest/pipeline/filebeat*'"
+  shell: "unset http_proxy&&curl -XDELETE -u {{ es_user }}:{{ es_pass }} 'http://{{ es_host[0] }}:9200/_ingest/pipeline/filebeat*'"
   when: inventory_hostname in groups['ln'] and filebeat_init
 - name: enable filebeat module in login node
   become: yes
@@ -215,11 +243,11 @@
   changed_when: rcn.stdout.startswith("Enable") 
 - name: filebeat setup init
   become: yes
-  command: "filebeat setup -e -E output.logstash.enabled=false -E output.elasticsearch.hosts=['localhost:9200'] -E output.elasticsearch.username={{ es_user }} -E output.elasticsearch.password={{ es_pass }}"
+  shell: "unset http_proxy&&filebeat setup -e -E output.logstash.enabled=false -E output.elasticsearch.hosts=[{{ hostvars[es_host[0]]['ip'] }}:9200] -E output.elasticsearch.username={{ es_user }} -E output.elasticsearch.password={{ es_pass }}"
   when: inventory_hostname in groups['ln'] and filebeat_init
 - name: filebeat add pipelines into ES
   become: yes
-  command: "filebeat setup --pipelines --modules {{ filebeat_ln_modules|join(',') }}  -E output.logstash.enabled=false -E output.elasticsearch.hosts=['localhost:9200'] -E output.elasticsearch.username={{ es_user }} -E output.elasticsearch.password={{ es_pass }} -M system.auth.var.convert_timezone=true -M system.syslog.var.convert_timezone=true -M nginx.error.var.convert_timezone=true -M apache2.error.var.convert_timezone=true"
+  shell: "unset http_proxy&&filebeat setup --pipelines --modules {{ filebeat_ln_modules|join(',') }}  -E output.logstash.enabled=false -E output.elasticsearch.hosts=['{{ es_host[0] }}:9200'] -E output.elasticsearch.username={{ es_user }} -E output.elasticsearch.password={{ es_pass }} -M system.auth.var.convert_timezone=true -M system.syslog.var.convert_timezone=true -M nginx.error.var.convert_timezone=true -M apache2.error.var.convert_timezone=true"
   when: inventory_hostname in groups['ln'] and filebeat_init
 - name: start filebeat again
   become: yes

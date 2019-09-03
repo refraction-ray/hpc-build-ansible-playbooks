@@ -14,13 +14,13 @@
 #
 # Use a descriptive name for your cluster:
 #
-#cluster.name: my-application
+cluster.name: hpc2-es
 #
 # ------------------------------------ Node ------------------------------------
 #
 # Use a descriptive name for the node:
 #
-#node.name: node-1
+node.name: {{ inventory_hostname }}
 #
 # Add custom attributes to the node:
 #
@@ -52,7 +52,7 @@ path.logs: /var/log/elasticsearch
 #
 # Set the bind address to a specific IP (IPv4 or IPv6):
 #
-network.host: 127.0.0.1
+network.host: {{ hostvars[inventory_hostname]['ip'] }}
 #
 # Set a custom port for HTTP:
 #
@@ -65,11 +65,11 @@ network.host: 127.0.0.1
 # Pass an initial list of hosts to perform discovery when new node is started:
 # The default list of hosts is ["127.0.0.1", "[::1]"]
 #
-#discovery.zen.ping.unicast.hosts: ["host1", "host2"]
+discovery.zen.ping.unicast.hosts: [{% for h in es_host %} "{{ h }}" {{ "," if not loop.last else "" }} {% endfor %}]
 #
 # Prevent the "split brain" by configuring the majority of nodes (total number of master-eligible nodes / 2 + 1):
 #
-#discovery.zen.minimum_master_nodes: 
+discovery.zen.minimum_master_nodes: 2 
 #
 # For more information, consult the zen discovery module documentation.
 #
@@ -88,3 +88,7 @@ network.host: 127.0.0.1
 #action.destructive_requires_name: true
 
 xpack.security.enabled: true
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.verification_mode: certificate
+xpack.security.transport.ssl.keystore.path: certs/elastic-certificates.p12
+xpack.security.transport.ssl.truststore.path: certs/elastic-certificates.p12
