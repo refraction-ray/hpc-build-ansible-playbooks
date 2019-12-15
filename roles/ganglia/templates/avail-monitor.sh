@@ -41,7 +41,7 @@ fi
 ## load check on master
 if [ "$hostname" == "{{ master_name}}" ]; then
     l=$(uptime|awk '{print $12}')
-    if (( $(echo "$l > 70" |bc -l) )); then 
+    if (( $(echo "$l > 80" |bc -l) )); then 
         logger -t $tag "the load on master cpu is too high: ${l}" 
     fi
 fi

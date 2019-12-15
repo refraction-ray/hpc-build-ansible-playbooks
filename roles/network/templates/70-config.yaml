@@ -2,7 +2,7 @@ network:
   version: 2
   renderer: networkd
   ethernets:
-    eno1:
+    {{ hostvars[inventory_hostname]['nic'] | default(cn_default_nic) }}:
       dhcp4: yes
       gateway4: {{ master_ip }}
       mtu: {{ mtu }}

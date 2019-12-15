@@ -168,5 +168,5 @@
   when: inventory_hostname in groups['ln']
 - name: enable jumbo frame on cn
   become: yes
-  command: "ip link set eno1 mtu {{ mtu }}"
+  command: "ip link set {{ hostvars[inventory_hostname]['nic'] | default(cn_default_nic) }} mtu {{ mtu }}"
   when: inventory_hostname in groups['cn']

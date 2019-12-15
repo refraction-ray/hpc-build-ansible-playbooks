@@ -8,3 +8,4 @@ ctldhost:
   - c8
 dbdhost: master
 slurm_mail: slurm@localhost.domain
+slurm_spool_path: /var/spool/slurmd

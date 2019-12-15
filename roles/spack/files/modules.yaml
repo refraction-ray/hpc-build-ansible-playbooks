@@ -27,3 +27,7 @@ modules:
       environment:
         set:
           SLEPC_DIR: /home/ubuntu/softwares/petsc-slepc/slepc-3.11.1 
+    intel-mkl:
+      environment:
+        prepend_path:
+          LD_LIBRARY_PATH: "/opt/intel/mkl/lib/intel64"

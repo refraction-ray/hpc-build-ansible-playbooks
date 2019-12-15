@@ -14,7 +14,7 @@ buffer_time:
 
 # The Elasticsearch hostname for metadata writeback
 # Note that every rule can have its own Elasticsearch host
-es_host: localhost
+es_host: "{{ es_host }}"
 
 # The Elasticsearch port
 es_port: 9200

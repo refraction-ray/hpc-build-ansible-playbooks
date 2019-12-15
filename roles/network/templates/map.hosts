@@ -1,3 +1,8 @@
 {% for h in groups['cn'] %}
 dhcp-host={{ hostvars[h]['mac'] }},{{ hostvars[h]['ip'] }},{{ h }},infinite
 {% endfor %}
+{% for h in groups['cn'] %}
+{% if 'idrac' in hostvars[h] %}
+dhcp-host={{ hostvars[h]['idrac'] }},{{ hostvars[h]['idracip'] }},{{ h+"-idrac" }},infinite
+{% endif %}
+{% endfor %}
