@@ -43,16 +43,16 @@ $ ansible-playbook -i hosts site.yml -Kvv ## enter sudo user password for the ne
 
 Ansible cannot do everything, and for some flexible and risky jobs, you may want to do them by hand directly.
 
-* Mount local hard disk if there are any. Partition, format and mount them at master node. If there is any local mount need for compute nodes (which is rare for HPC style setup), you may want to add them to `basic` role, to make the world simple. This must be done before the running of `basic` role, which make the nfs mount possible.
+* Manage local hard disk if there are any. Partition, format and mount them at master node. If there is any local mount need for compute nodes (which is rare for HPC style setup), you may want to add them to `basic` role, to make the world simple. This must be done before the running of `basic` role, which make the nfs mount possible.
 * Disk quota initial configure if you want to limit users disk usage on certain filesystem. This must be done before the running of `user` role, where newly created user can automatically limit by quota.
-* Manage slurm cluster, account, qos and user by `sacctmgr`, this can only be done after `slurm` role, when slurm is well configured and running. Besides, this should be done before `user` role, where new user can automatically be added to some account or limited by some qos policy.
+* Manage slurm account, qos and user by `sacctmgr`, this can only be done after `slurm` role, when slurm is well configured and running. Besides, this should be done before `user` role, where new user can automatically be added to some account or limited by some qos policy.
 * Install necessary external softwares for numerical computation, the common ones are Intel parallel studio, Mathematica and Matlab. Further manage and install packages by spack and conda provided by intel parallel studio.
 
 ### Limitations
 
 These ansible playbooks here are very limited to a small cluster setup, where only one master/login node with possible several dozens of homogeneous compute nodes.
 
-For a larger cluster setup, there should be more than one login nodes, and different master nodes may play different roles (some provide disk storage, some provide slurm database, some provide slurm controller, some provide bakup…). Besides, in such scale, the compute nodes are highly likely to be heterogeneous (some with big memory, some with GPU resource...), more detailed setups and carefully designed slurm configurations are needed in such scenario. It is in princinple OK to generalize our playbook for such large HPC clusters, but more effort should be paid instead of directly applying the playbooks here.
+For a larger cluster setup, there should be more than one login nodes, and different master nodes may play different roles (some provide disk storage, some provide slurm database, some provide slurm controller, some provide backup…). Besides, in such scale, the compute nodes are highly likely to be heterogeneous (some with big memory, some with GPU resource...), more detailed setups and carefully designed slurm configurations are needed in such scenario. It is in princinple OK to generalize our playbook for such large HPC clusters, but more effort should be paid instead of directly applying the playbooks here.
 
 ## Platform information
 
