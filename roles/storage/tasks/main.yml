@@ -9,7 +9,7 @@
 - name: install nfs client on all nodes
   become: yes
   apt:
-    name: nfs-common=1:1.3.4-2.1ubuntu5.2
+    name: nfs-common
     state: present
 - name: update nfs config file on ln node
   become: yes

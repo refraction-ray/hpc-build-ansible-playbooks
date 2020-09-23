@@ -12,7 +12,7 @@ temp=$(echo "$sum/$count" | bc)
 
 $GMETRIC -t float -n "cpu_temp" -u "Celcius" -v $temp
 
-if [ $temp -gt 81 ]; then
+if [ $temp -gt 89 ]; then
     logger -t gangalia-monitor temperature_too_high: $temp
 fi
 

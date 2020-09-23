@@ -31,6 +31,16 @@
     mode: 0640
   when: inventory_hostname in es_host
   register: esconf
+- name: jvm option
+  become: yes
+  copy:
+    src: jvm.options
+    dest: /etc/elasticsearch/jvm.options
+    owner: root
+    group: elasticsearch
+    mode: 0640
+  when: inventory_hostname in es_host
+  register: jvmconf
 - name: ensure cert directory exist
   become: yes
   file:
@@ -72,7 +82,7 @@
     name: elasticsearch
     state: restarted
     enabled: yes
-  when: inventory_hostname in es_host and (esconf.changed or sslconf.changed)
+  when: inventory_hostname in es_host and (esconf.changed or sslconf.changed or jvmconf.changed)
 - name: install kibana
   become: yes
   apt:

@@ -1,5 +1,11 @@
 [cn]
-c[1:9]
+c[1:14]
+
+[general]
+c[1:8]
+
+[hyper]
+c[10:14]
 
 [ln]
 master
